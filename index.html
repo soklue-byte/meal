@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>단백질 & 식단 관리 앱</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 max-w-md mx-auto space-y-4">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center">
+    <h1 class="text-xl font-bold text-gray-800">🔥 Nutrition Tracker</h1>
+    <button onclick="resetSelectedDateData()" class="text-xs text-gray-400 underline">선택일 데이터 초기화</button>
+  </div>
+
+  <!-- Weekly Calendar & Date Picker Bar -->
+  <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+    <div class="flex justify-between items-center mb-3">
+      <span id="currentWeekRange" class="text-xs font-bold text-gray-500">2026.08.02 - 08.08</span>
+      <input type="date" id="datePicker" onchange="onDatePickerChange(event)" 
+        class="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:border-blue-500 text-gray-700 font-medium">
+    </div>
+    <div id="weeklyGrid" class="grid grid-cols-7 gap-1 text-center"></div>
+  </div>
+
+  <!-- Dashboard: 4 Nutrients Gauges -->
+  <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
+    <div class="flex justify-between items-center border-b pb-2">
+      <span id="selectedDateTitle" class="text-xs font-bold text-gray-600 uppercase tracking-wider">오늘의 영양 달성률</span>
+      <span id="totalKcalDisplay" class="text-xs font-extrabold text-gray-500 bg-gray-100 px-2 py-1 rounded-lg">총 0 kcal</span>
+    </div>
+
+    <!-- 1. Protein Gauge (Target: 165g) -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <span class="text-xs font-bold text-blue-600">💪 단백질 (Protein)</span>
+        <span class="text-xs font-bold text-gray-600"><span id="currProtein">0</span> / <span id="targetProtein">165</span>g (<span id="pctProtein">0</span>%)</span>
+      </div>
+      <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+        <div id="barProtein" class="bg-blue-600 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- 2. Carbs Gauge (Target: 160g) -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <span class="text-xs font-bold text-amber-600">🍚 탄수화물 (Carbs)</span>
+        <span class="text-xs font-bold text-gray-600"><span id="currCarbs">0</span> / <span id="targetCarbs">160</span>g (<span id="pctCarbs">0</span>%)</span>
+      </div>
+      <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+        <div id="barCarbs" class="bg-amber-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- 3. Fat Gauge (Target: 48g) -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <span class="text-xs font-bold text-rose-600">🥑 지방 (Fat)</span>
+        <span class="text-xs font-bold text-gray-600"><span id="currFat">0</span> / <span id="targetFat">48</span>g (<span id="pctFat">0</span>%)</span>
+      </div>
+      <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+        <div id="barFat" class="bg-rose-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- 4. Fiber Gauge (Target: 25g) -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <span class="text-xs font-bold text-emerald-600">🥗 식이섬유 (Fiber)</span>
+        <span class="text-xs font-bold text-gray-600"><span id="currFiber">0</span> / <span id="targetFiber">25</span>g (<span id="pctFiber">0</span>%)</span>
+      </div>
+      <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+        <div id="barFiber" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: 시간대별 영양제 전용 루틴 칸 -->
+  <div class="bg-white rounded-2xl p-4 shadow-sm border border-purple-100 bg-purple-50/20">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="text-sm font-bold text-purple-900 flex items-center gap-1">
+        <span>💊 시간대별 영양제 루틴</span>
+      </h2>
+    </div>
+
+    <!-- Time Tabs -->
+    <div class="flex bg-gray-100 p-1 rounded-xl text-xs font-bold mb-3">
+      <button id="tabMorningBtn" onclick="switchSuppTab('morning')" class="flex-1 py-1.5 rounded-lg bg-white shadow-xs text-purple-700">🌅 아침</button>
+      <button id="tabLunchBtn" onclick="switchSuppTab('lunch')" class="flex-1 py-1.5 rounded-lg text-gray-500">☀️ 점심</button>
+      <button id="tabDinnerBtn" onclick="switchSuppTab('dinner')" class="flex-1 py-1.5 rounded-lg text-gray-500">🌙 저녁</button>
+    </div>
+
+    <!-- Checklist -->
+    <div id="suppChecklist" class="flex flex-col gap-1.5 max-h-56 overflow-y-auto p-0.5"></div>
+
+    <!-- Summary Bar & Submit -->
+    <div id="suppSummaryBar" class="mt-3 pt-3 border-t border-purple-100 bg-white p-2.5 rounded-xl border">
+      <div class="flex justify-between items-center text-xs font-bold text-purple-900 mb-1">
+        <span>기록할 영양제 (<span id="suppCount">0</span>개)</span>
+        <div class="flex gap-2">
+          <button onclick="selectAllSupps()" class="text-[10px] text-purple-600 underline font-normal">전체 선택</button>
+          <button onclick="clearSupps()" class="text-[10px] text-gray-400 underline font-normal">전체 해제</button>
+        </div>
+      </div>
+      <button onclick="submitSupplements()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg text-xs shadow-sm transition-colors mt-2">
+        선택한 영양제 한꺼번에 기록하기
+      </button>
+    </div>
+  </div>
+
+  <!-- SECTION 2: 자주 먹는 식품 전용 선택 칸 -->
+  <div class="bg-white rounded-2xl p-4 shadow-sm border border-blue-100">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="text-sm font-bold text-gray-800 flex items-center gap-1">
+        <span>🍱 자주 먹는 식품</span>
+      </h2>
+      <button onclick="resetFoodItemsToDefault()" class="text-[10px] text-gray-400 underline">초기화</button>
+    </div>
+
+    <!-- Food Quick Buttons -->
+    <div id="foodButtonsList" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-0.5"></div>
+
+    <!-- Multi Select Food Bar & Submit -->
+    <div id="foodSelectBar" class="hidden mt-3 pt-3 border-t border-gray-100 bg-blue-50/50 p-2.5 rounded-xl">
+      <div class="flex justify-between items-center text-xs font-bold text-blue-900 mb-1">
+        <span>선택 식품 (<span id="selectedFoodCount">0</span>개)</span>
+        <button onclick="clearFoodSelection()" class="text-[10px] text-gray-400 underline font-normal">선택 해제</button>
+      </div>
+      <div class="text-[11px] text-gray-600 mb-2 flex flex-wrap gap-2 font-medium">
+        <span>단: <b id="foodSumP" class="text-blue-600">0</b>g</span>
+        <span>탄: <b id="foodSumC" class="text-amber-600">0</b>g</span>
+        <span>지: <b id="foodSumF" class="text-rose-600">0</b>g</span>
+        <span>열량: <b id="foodSumKcal" class="text-gray-700">0</b>kcal</span>
+      </div>
+      <button onclick="submitFoodSelection()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg text-xs shadow-sm">
+        선택 식품 한꺼번에 기록하기
+      </button>
+    </div>
+  </div>
+
+  <!-- SECTION 3: 수동 직접 입력 (+ 자주 먹는 식품 추가 기능) -->
+  <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+    <h2 class="text-sm font-bold text-gray-700 mb-3">＋ 수동 직접 입력</h2>
+    <form id="trackerForm" onsubmit="addEntry(event)" class="space-y-3">
+      <div>
+        <input type="text" id="foodName" placeholder="식품명 또는 영양제명" required 
+          class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <input type="number" step="0.1" id="proteinGrams" placeholder="단백질 (g)" required class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+        <input type="number" step="0.1" id="carbsGrams" placeholder="탄수화물 (g)" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <input type="number" step="0.1" id="fatGrams" placeholder="지방 (g)" class="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+        <input type="number" step="0.1" id="fiberGrams" placeholder="식이섬유 (g)" class="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+        <input type="number" step="0.1" id="calories" placeholder="칼로리 (kcal)" class="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+      </div>
+      
+      <!-- '자주 먹는 식품에 함께 추가' 체크박스 -->
+      <div class="flex items-center gap-2 pt-1">
+        <input type="checkbox" id="saveToQuickList" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer">
+        <label for="saveToQuickList" class="text-xs text-gray-600 font-bold cursor-pointer">
+          🍱 '자주 먹는 식품' 리스트에도 함께 저장하기
+        </label>
+      </div>
+
+      <button type="submit" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-2.5 rounded-xl text-sm transition-colors shadow-sm">
+        기록 저장하기
+      </button>
+    </form>
+  </div>
+
+  <!-- SECTION 4: Timeline List -->
+  <div>
+    <h2 class="text-sm font-bold text-gray-700 mb-2">⏱️ 기록 타임라인 (최신순)</h2>
+    <div id="logList" class="space-y-2"></div>
+  </div>
+
+  <script>
+    const TARGETS = { protein: 165, carbs: 160, fat: 48, fiber: 25 };
+
+    const suppRoutines = {
+      morning: [
+        { name: '유산균 1캡슐', protein: 0, carbs: 0, fat: 0, fiber: 0, kcal: 0 },
+        { name: '올리브 오일 1캡슐', protein: 0, carbs: 0, fat: 0.6, fiber: 0, kcal: 5.3 },
+        { name: '비타민 D3 1캡슐', protein: 0, carbs: 0, fat: 0, fiber: 0, kcal: 0 },
+        { name: 'NFC 레몬착즙액 1포', protein: 0.1, carbs: 1.9, fat: 0, fiber: 0, kcal: 8 },
+        { name: '크레아틴 3g + 소금 3꼬집', protein: 0, carbs: 0, fat: 0, fiber: 0, kcal: 0 }
+      ],
+      lunch: [
+        { name: '맥스컷 프로 크롬 3캡슐', protein: 0, carbs: 2.5, fat: 0, fiber: 0, kcal: 10 },
+        { name: '오메가3 1캡슐', protein: 0, carbs: 0, fat: 1, fiber: 0, kcal: 10 },
+        { name: '마그네슘 2캡슐', protein: 0, carbs: 0, fat: 0, fiber: 0, kcal: 0 },
+        { name: '루테인 1캡슐', protein: 0, carbs: 0, fat: 0, fiber: 0, kcal: 1 },
+        { name: '밀크씨슬 1정', protein: 0, carbs: 1, fat: 0, fiber: 0, kcal: 0 }
+      ],
+      dinner: [
+        { name: '맥스컷 프로 크롬 3캡슐', protein: 0, carbs: 2.5, fat: 0, fiber: 0, kcal: 10 },
+        { name: '오메가3 1캡슐', protein: 0, carbs: 0, fat: 1, fiber: 0, kcal: 10 },
+        { name: '마그네슘 2캡슐', protein: 0, carbs: 0, fat: 0, fiber: 0, kcal: 0 },
+        { name: '쏘팔메토 1캡슐', protein: 0, carbs: 0, fat: 0, fiber: 0, kcal: 0 }
+      ]
+    };
+
+    const defaultFoodItems = [
+      { name: '널담 베이글 플레인', protein: 21, carbs: 61, fat: 8, fiber: 0, kcal: 391 },
+      { name: '널담 베이글 바질', protein: 21, carbs: 61, fat: 8, fiber: 0, kcal: 393 },
+      { name: '널담 베이글 흑임자', protein: 22, carbs: 61, fat: 8.6, fiber: 0, kcal: 399 },
+      { name: '닥터유 프로 쉐이크 곡물', protein: 24, carbs: 12, fat: 2.1, fiber: 5, kcal: 153 },
+      { name: '닥터유 프로 드링크 딸기', protein: 40, carbs: 12, fat: 4.0, fiber: 0, kcal: 244 },
+      { name: '닥터유 프로 드링크 초코', protein: 40, carbs: 9.8, fat: 6.5, fiber: 0, kcal: 258 },
+      { name: '토닭파 (프로틴 파스타)', protein: 48.7, carbs: 32.8, fat: 16.8, fiber: 0, kcal: 467 },
+      { name: '신타6 아이솔레이트 1스쿱', protein: 25, carbs: 7, fat: 1.5, fiber: 1, kcal: 140 },
+      { name: '무바 프로틴 드링크', protein: 30, carbs: 11, fat: 2.9, fiber: 0, kcal: 190 },
+      { name: '연세 두유 무가당 검은콩', protein: 7, carbs: 5, fat: 5.4, fiber: 3.8, kcal: 90 },
+      { name: '연세 두유 무가당 오리지널', protein: 7, carbs: 5, fat: 4.9, fiber: 3.8, kcal: 85 },
+      { name: '굽네 크리스피 닭가슴살', protein: 22, carbs: 11, fat: 2.9, fiber: 0, kcal: 160 }
+    ];
+
+    let foodItems = JSON.parse(localStorage.getItem('nutritionFoodItems')) || defaultFoodItems;
+    let selectedDate = new Date();
+    let currentSuppTab = 'morning';
+    let selectedSuppIndices = new Set();
+    let selectedFoodIndices = new Set();
+    let logsMap = JSON.parse(localStorage.getItem('nutritionLogsMap')) || {};
+
+    function formatDateKey(dateObj) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    document.getElementById('datePicker').value = formatDateKey(selectedDate);
+
+    // --- 영양제 루틴 제어 함수 ---
+    function switchSuppTab(tab) {
+      currentSuppTab = tab;
+      const tabs = ['morning', 'lunch', 'dinner'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`);
+        if (t === tab) {
+          btn.className = 'flex-1 py-1.5 rounded-lg bg-white shadow-xs text-purple-700 font-bold';
+        } else {
+          btn.className = 'flex-1 py-1.5 rounded-lg text-gray-500 font-medium';
+        }
+      });
+      selectAllSupps();
+    }
+
+    function toggleSuppItem(index) {
+      if (selectedSuppIndices.has(index)) {
+        selectedSuppIndices.delete(index);
+      } else {
+        selectedSuppIndices.add(index);
+      }
+      renderSuppChecklist();
+    }
+
+    function selectAllSupps() {
+      const list = suppRoutines[currentSuppTab] || [];
+      selectedSuppIndices = new Set(list.map((_, i) => i));
+      renderSuppChecklist();
+    }
+
+    function clearSupps() {
+      selectedSuppIndices.clear();
+      renderSuppChecklist();
+    }
+
+    function renderSuppChecklist() {
+      const container = document.getElementById('suppChecklist');
+      container.innerHTML = '';
+      const list = suppRoutines[currentSuppTab] || [];
+
+      list.forEach((item, index) => {
+        const isChecked = selectedSuppIndices.has(index);
+        const card = document.createElement('div');
+        card.onclick = () => toggleSuppItem(index);
+        card.className = `flex items-center justify-between p-2.5 rounded-xl border text-xs cursor-pointer transition-all ${
+          isChecked 
+            ? 'bg-purple-50/80 border-purple-200 text-purple-950 font-bold shadow-xs' 
+            : 'bg-gray-50 border-gray-200 text-gray-400 line-through'
+        }`;
+
+        card.innerHTML = `
+          <div class="flex items-center gap-2">
+            <input type="checkbox" ${isChecked ? 'checked' : ''} class="w-4 h-4 text-purple-600 rounded border-gray-300 pointer-events-none">
+            <span>${item.name}</span>
+          </div>
+          <span class="text-[10px] text-purple-600 bg-purple-100 px-2 py-0.5 rounded-md font-bold">💊 섭취</span>
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById('suppCount').innerText = selectedSuppIndices.size;
+    }
+
+    function submitSupplements() {
+      if (selectedSuppIndices.size === 0) {
+        alert('선택된 영양제가 없습니다.');
+        return;
+      }
+
+      const selectedKey = formatDateKey(selectedDate);
+      const list = suppRoutines[currentSuppTab] || [];
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+      if (!logsMap[selectedKey]) logsMap[selectedKey] = [];
+
+      selectedSuppIndices.forEach(idx => {
+        const item = list[idx];
+        if (item) {
+          logsMap[selectedKey].push({
+            name: item.name,
+            protein: Number(item.protein || 0),
+            carbs: Number(item.carbs || 0),
+            fat: Number(item.fat || 0),
+            fiber: Number(item.fiber || 0),
+            kcal: Number(item.kcal || 0),
+            time: timeStr
+          });
+        }
+      });
+
+      localStorage.setItem('nutritionLogsMap', JSON.stringify(logsMap));
+      selectedSuppIndices.clear();
+      renderSuppChecklist();
+      render();
+    }
+
+    // --- 자주 먹는 식품 제어 함수 ---
+    function toggleFoodSelection(index) {
+      if (selectedFoodIndices.has(index)) {
+        selectedFoodIndices.delete(index);
+      } else {
+        selectedFoodIndices.add(index);
+      }
+      renderFoodButtons();
+      updateFoodSummary();
+    }
+
+    function clearFoodSelection() {
+      selectedFoodIndices.clear();
+      renderFoodButtons();
+      updateFoodSummary();
+    }
+
+    function updateFoodSummary() {
+      const bar = document.getElementById('foodSelectBar');
+      if (selectedFoodIndices.size === 0) {
+        bar.classList.add('hidden');
+        return;
+      }
+
+      bar.classList.remove('hidden');
+      document.getElementById('selectedFoodCount').innerText = selectedFoodIndices.size;
+
+      let p = 0, c = 0, f = 0, k = 0;
+      selectedFoodIndices.forEach(idx => {
+        const item = foodItems[idx];
+        if (item) {
+          p += Number(item.protein || 0);
+          c += Number(item.carbs || 0);
+          f += Number(item.fat || 0);
+          k += Number(item.kcal || 0);
+        }
+      });
+
+      document.getElementById('foodSumP').innerText = Math.round(p * 10) / 10;
+      document.getElementById('foodSumC').innerText = Math.round(c * 10) / 10;
+      document.getElementById('foodSumF').innerText = Math.round(f * 10) / 10;
+      document.getElementById('foodSumKcal').innerText = Math.round(k);
+    }
+
+    function renderFoodButtons() {
+      const container = document.getElementById('foodButtonsList');
+      container.innerHTML = '';
+
+      foodItems.forEach((item, index) => {
+        const isSelected = selectedFoodIndices.has(index);
+        const btn = document.createElement('div');
+        btn.onclick = () => toggleFoodSelection(index);
+        btn.className = `flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all shadow-xs ${
+          isSelected ? 'bg-blue-600 text-white ring-2 ring-blue-300' : 'bg-blue-50 border border-blue-100 hover:bg-blue-100 text-blue-900'
+        }`;
+        btn.innerHTML = `
+          <span>${isSelected ? '✓ ' : ''}${item.name}</span>
+          <span class="text-[10px] ${isSelected ? 'bg-blue-800 text-white' : 'bg-blue-200 text-blue-900'} px-1.5 py-0.5 rounded-md">+${item.protein}g</span>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function submitFoodSelection() {
+      if (selectedFoodIndices.size === 0) return;
+      const selectedKey = formatDateKey(selectedDate);
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+      if (!logsMap[selectedKey]) logsMap[selectedKey] = [];
+
+      selectedFoodIndices.forEach(idx => {
+        const item = foodItems[idx];
+        if (item) {
+          logsMap[selectedKey].push({
+            name: item.name,
+            protein: Number(item.protein || 0),
+            carbs: Number(item.carbs || 0),
+            fat: Number(item.fat || 0),
+            fiber: Number(item.fiber || 0),
+            kcal: Number(item.kcal || 0),
+            time: timeStr
+          });
+        }
+      });
+
+      localStorage.setItem('nutritionLogsMap', JSON.stringify(logsMap));
+      clearFoodSelection();
+      render();
+    }
+
+    function resetFoodItemsToDefault() {
+      if (confirm('자주 먹는 식품 리스트를 초기화하시겠습니까?')) {
+        foodItems = [...defaultFoodItems];
+        localStorage.setItem('nutritionFoodItems', JSON.stringify(foodItems));
+        clearFoodSelection();
+      }
+    }
+
+    // --- 공통 달력 & 기록 렌더링 ---
+    function onDatePickerChange(e) {
+      if (e.target.value) {
+        selectedDate = new Date(e.target.value + 'T00:00:00');
+        render();
+      }
+    }
+
+    function selectDate(dateStr) {
+      selectedDate = new Date(dateStr + 'T00:00:00');
+      document.getElementById('datePicker').value = dateStr;
+      render();
+    }
+
+    function getWeekDays(currentDate) {
+      const sun = new Date(currentDate);
+      sun.setDate(currentDate.getDate() - currentDate.getDay());
+      const week = [];
+      for (let i = 0; i < 7; i++) {
+        const day = new Date(sun);
+        day.setDate(sun.getDate() + i);
+        week.push(day);
+      }
+      return week;
+    }
+
+    function render() {
+      const selectedKey = formatDateKey(selectedDate);
+      const todayKey = formatDateKey(new Date());
+
+      // 1. Weekly Grid
+      const weekDays = getWeekDays(selectedDate);
+      const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+      
+      const startStr = `${weekDays[0].getMonth()+1}.${weekDays[0].getDate()}`;
+      const endStr = `${weekDays[6].getMonth()+1}.${weekDays[6].getDate()}`;
+      document.getElementById('currentWeekRange').innerText = `${weekDays[0].getFullYear()}.${startStr} - ${endStr}`;
+
+      const weeklyGrid = document.getElementById('weeklyGrid');
+      weeklyGrid.innerHTML = '';
+
+      weekDays.forEach((dayObj, i) => {
+        const key = formatDateKey(dayObj);
+        const dayLogs = logsMap[key] || [];
+        const dayProtein = dayLogs.reduce((sum, l) => sum + Number(l.protein || 0), 0);
+        const dayPct = Math.min(Math.round((dayProtein / TARGETS.protein) * 100), 100);
+
+        const isSelected = key === selectedKey;
+        const isToday = key === todayKey;
+
+        const dayCard = document.createElement('div');
+        dayCard.onclick = () => selectDate(key);
+        dayCard.className = `cursor-pointer p-1.5 rounded-xl transition-all ${
+          isSelected ? 'bg-blue-600 text-white shadow-sm font-bold' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+        } ${isToday && !isSelected ? 'ring-2 ring-blue-400' : ''}`;
+
+        dayCard.innerHTML = `
+          <div class="text-[10px] opacity-75 mb-0.5">${dayNames[i]}</div>
+          <div class="text-xs ${isSelected ? 'font-black' : 'font-semibold'}">${dayObj.getDate()}</div>
+          <div class="text-[9px] mt-1 font-extrabold ${isSelected ? 'text-blue-100' : dayPct >= 100 ? 'text-blue-600' : dayPct > 0 ? 'text-gray-500' : 'text-gray-300'}">
+            ${dayPct}%
+          </div>
+        `;
+        weeklyGrid.appendChild(dayCard);
+      });
+
+      // 2. Gauges Update
+      const currentLogs = logsMap[selectedKey] || [];
+      let totals = { protein: 0, carbs: 0, fat: 0, fiber: 0, kcal: 0 };
+
+      currentLogs.forEach(l => {
+        totals.protein += Number(l.protein || 0);
+        totals.carbs += Number(l.carbs || 0);
+        totals.fat += Number(l.fat || 0);
+        totals.fiber += Number(l.fiber || 0);
+        totals.kcal += Number(l.kcal || 0);
+      });
+
+      const updateBar = (id, curr, target) => {
+        const roundCurr = Math.round(curr * 10) / 10;
+        const pct = Math.min(Math.round((curr / target) * 100), 100);
+        document.getElementById(`curr${id}`).innerText = roundCurr;
+        document.getElementById(`pct${id}`).innerText = pct;
+        document.getElementById(`bar${id}`).style.width = pct + '%';
+      };
+
+      updateBar('Protein', totals.protein, TARGETS.protein);
+      updateBar('Carbs', totals.carbs, TARGETS.carbs);
+      updateBar('Fat', totals.fat, TARGETS.fat);
+      updateBar('Fiber', totals.fiber, TARGETS.fiber);
+
+      document.getElementById('totalKcalDisplay').innerText = `총 ${Math.round(totals.kcal)} kcal`;
+      document.getElementById('selectedDateTitle').innerText = selectedKey === todayKey ? '오늘의 영양 달성률' : `${selectedKey} 영양 달성률`;
+
+      // 3. Render Food Buttons
+      renderFoodButtons();
+
+      // 4. Timeline
+      const logList = document.getElementById('logList');
+      logList.innerHTML = '';
+
+      currentLogs.slice().reverse().forEach((log, index) => {
+        const realIndex = currentLogs.length - 1 - index;
+        const item = document.createElement('div');
+        item.className = 'bg-white p-3.5 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center';
+        item.innerHTML = `
+          <div>
+            <div class="font-bold text-sm text-gray-800">${log.name}</div>
+            <div class="text-xs text-gray-400 mt-0.5">${log.time} ${log.kcal ? `• ${log.kcal}kcal` : ''}</div>
+            <div class="text-[11px] text-gray-500 mt-1 flex gap-2 font-medium">
+              <span>단: ${log.protein || 0}g</span>
+              <span>탄: ${log.carbs || 0}g</span>
+              <span>지: ${log.fat || 0}g</span>
+              <span>섬유: ${log.fiber || 0}g</span>
+            </div>
+          </div>
+          <button onclick="deleteEntry(${realIndex})" class="text-gray-300 hover:text-red-500 text-xs font-bold px-2 py-1">✕</button>
+        `;
+        logList.appendChild(item);
+      });
+
+      if (currentLogs.length === 0) {
+        logList.innerHTML = `<div class="text-center py-8 text-xs text-gray-400">등록된 기록이 없습니다.</div>`;
+      }
+    }
+
+    // --- 수동 직접 입력 및 자주 먹는 식품 자동 추가 처리 ---
+    function addEntry(e) {
+      e.preventDefault();
+      const selectedKey = formatDateKey(selectedDate);
+      const name = document.getElementById('foodName').value.trim();
+      const protein = Number(document.getElementById('proteinGrams').value || 0);
+      const carbs = Number(document.getElementById('carbsGrams').value || 0);
+      const fat = Number(document.getElementById('fatGrams').value || 0);
+      const fiber = Number(document.getElementById('fiberGrams').value || 0);
+      const kcal = Number(document.getElementById('calories').value || 0);
+      const saveToQuick = document.getElementById('saveToQuickList').checked;
+
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+      if (!logsMap[selectedKey]) logsMap[selectedKey] = [];
+
+      // 1. 오늘 식단 타임라인에 기록 저장
+      logsMap[selectedKey].push({
+        name,
+        protein,
+        carbs,
+        fat,
+        fiber,
+        kcal,
+        time: timeStr
+      });
+      localStorage.setItem('nutritionLogsMap', JSON.stringify(logsMap));
+
+      // 2. '자주 먹는 식품에 함께 저장' 체크 시 리스트에 추가
+      if (saveToQuick) {
+        const exists = foodItems.some(item => item.name === name);
+        if (!exists) {
+          foodItems.push({ name, protein, carbs, fat, fiber, kcal });
+          localStorage.setItem('nutritionFoodItems', JSON.stringify(foodItems));
+        }
+      }
+
+      document.getElementById('trackerForm').reset();
+      render();
+    }
+
+    function deleteEntry(index) {
+      const selectedKey = formatDateKey(selectedDate);
+      if (logsMap[selectedKey]) {
+        logsMap[selectedKey].splice(index, 1);
+        localStorage.setItem('nutritionLogsMap', JSON.stringify(logsMap));
+        render();
+      }
+    }
+
+    function resetSelectedDateData() {
+      const selectedKey = formatDateKey(selectedDate);
+      if (confirm(`${selectedKey} 기록을 전부 초기화하시겠습니까?`)) {
+        delete logsMap[selectedKey];
+        localStorage.setItem('nutritionLogsMap', JSON.stringify(logsMap));
+        render();
+      }
+    }
+
+    // 초기 실행
+    switchSuppTab('morning');
+    render();
+  </script>
+</body>
+</html>
