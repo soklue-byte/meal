@@ -24,6 +24,50 @@
     <div id="weeklyGrid" class="grid grid-cols-7 gap-1 text-center"></div>
   </div>
 
+  <!-- SECTION 0: 공복 체중 입력 & 목표 수동 설정 섹션 -->
+  <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-2 flex-1">
+      <span class="text-xs font-bold text-gray-700 shrink-0">⚖️ 공복 체중</span>
+      <input type="number" step="0.1" inputmode="decimal" id="weightInput" onchange="onWeightChange(event)" placeholder="76.9" 
+        class="w-20 px-2.5 py-1 text-xs border border-gray-200 rounded-xl font-bold text-blue-900 focus:outline-none focus:border-blue-500 text-center bg-blue-50/50">
+      <span class="text-xs font-bold text-gray-500">kg</span>
+    </div>
+    <button onclick="toggleTargetModal()" class="text-xs text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-xl font-bold border border-blue-100 hover:bg-blue-100 transition-colors shrink-0">
+      ⚙️ 목표 수동 설정
+    </button>
+  </div>
+
+  <!-- Manual Target Setting Modal (Hidden by Default) -->
+  <div id="targetModal" class="hidden bg-white p-4 rounded-2xl shadow-lg border border-blue-200 space-y-3">
+    <div class="flex justify-between items-center">
+      <h3 class="text-xs font-bold text-gray-800">🎯 영양 목표 수동 직접 설정</h3>
+      <button onclick="toggleTargetModal()" class="text-xs text-gray-400 font-bold">✕</button>
+    </div>
+    <p class="text-[11px] text-gray-500">원하시는 일일 목표 수치(g)를 수동으로 지정할 수 있습니다.</p>
+    <div class="grid grid-cols-2 gap-2">
+      <div>
+        <label class="text-[10px] font-bold text-blue-600">💪 단백질 (g)</label>
+        <input type="number" id="manualTargetProtein" inputmode="decimal" class="w-full px-2 py-1 text-xs border rounded-lg">
+      </div>
+      <div>
+        <label class="text-[10px] font-bold text-amber-600">🍚 탄수화물 (g)</label>
+        <input type="number" id="manualTargetCarbs" inputmode="decimal" class="w-full px-2 py-1 text-xs border rounded-lg">
+      </div>
+      <div>
+        <label class="text-[10px] font-bold text-rose-600">🥑 지방 (g)</label>
+        <input type="number" id="manualTargetFat" inputmode="decimal" class="w-full px-2 py-1 text-xs border rounded-lg">
+      </div>
+      <div>
+        <label class="text-[10px] font-bold text-emerald-600">🥗 식이섬유 (g)</label>
+        <input type="number" id="manualTargetFiber" inputmode="decimal" class="w-full px-2 py-1 text-xs border rounded-lg">
+      </div>
+    </div>
+    <div class="flex gap-2 pt-1">
+      <button onclick="saveManualTargets()" class="flex-1 bg-blue-600 text-white font-bold py-1.5 rounded-lg text-xs">수동 설정 저장</button>
+      <button onclick="resetTargetsToWeight()" class="text-xs text-gray-500 underline font-normal">체중 기반 자동 계산으로 복원</button>
+    </div>
+  </div>
+
   <!-- Dashboard: 4 Nutrients Gauges -->
   <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
     <div class="flex justify-between items-center border-b pb-2">
@@ -31,7 +75,7 @@
       <span id="totalKcalDisplay" class="text-xs font-extrabold text-gray-500 bg-gray-100 px-2 py-1 rounded-lg">총 0 kcal</span>
     </div>
 
-    <!-- 1. Protein Gauge (Target: 165g) -->
+    <!-- 1. Protein Gauge -->
     <div>
       <div class="flex justify-between items-center mb-1">
         <span class="text-xs font-bold text-blue-600">💪 단백질 (Protein)</span>
@@ -42,7 +86,7 @@
       </div>
     </div>
 
-    <!-- 2. Carbs Gauge (Target: 160g) -->
+    <!-- 2. Carbs Gauge -->
     <div>
       <div class="flex justify-between items-center mb-1">
         <span class="text-xs font-bold text-amber-600">🍚 탄수화물 (Carbs)</span>
@@ -53,7 +97,7 @@
       </div>
     </div>
 
-    <!-- 3. Fat Gauge (Target: 48g) -->
+    <!-- 3. Fat Gauge -->
     <div>
       <div class="flex justify-between items-center mb-1">
         <span class="text-xs font-bold text-rose-600">🥑 지방 (Fat)</span>
@@ -64,7 +108,7 @@
       </div>
     </div>
 
-    <!-- 4. Fiber Gauge (Target: 25g) -->
+    <!-- 4. Fiber Gauge -->
     <div>
       <div class="flex justify-between items-center mb-1">
         <span class="text-xs font-bold text-emerald-600">🥗 식이섬유 (Fiber)</span>
@@ -109,7 +153,7 @@
     </div>
   </div>
 
-  <!-- SECTION 2: 자주 먹는 식품 전용 선택 칸 -->
+  <!-- SECTION 2: 자주 먹는 식품 전용 선택 및 수정/삭제 칸 -->
   <div class="bg-white rounded-2xl p-4 shadow-sm border border-blue-100">
     <div class="flex justify-between items-center mb-3">
       <h2 class="text-sm font-bold text-gray-800 flex items-center gap-1">
@@ -119,7 +163,7 @@
     </div>
 
     <!-- Food Quick Buttons -->
-    <div id="foodButtonsList" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-0.5"></div>
+    <div id="foodButtonsList" class="flex flex-col gap-1.5 max-h-56 overflow-y-auto p-0.5"></div>
 
     <!-- Multi Select Food Bar & Submit -->
     <div id="foodSelectBar" class="hidden mt-3 pt-3 border-t border-gray-100 bg-blue-50/50 p-2.5 rounded-xl">
@@ -139,9 +183,9 @@
     </div>
   </div>
 
-  <!-- SECTION 3: 수동 직접 입력 (inputmode="decimal" 추가) -->
-  <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-    <h2 class="text-sm font-bold text-gray-700 mb-3">＋ 수동 직접 입력</h2>
+  <!-- SECTION 3: 수동 직접 입력 & 수정 폼 -->
+  <div id="inputFormCard" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+    <h2 id="formTitle" class="text-sm font-bold text-gray-700 mb-3">＋ 수동 직접 입력</h2>
     <form id="trackerForm" onsubmit="addEntry(event)" class="space-y-3">
       <div>
         <input type="text" id="foodName" placeholder="식품명 또는 영양제명" required 
@@ -161,13 +205,18 @@
       <div class="flex items-center gap-2 pt-1">
         <input type="checkbox" id="saveToQuickList" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer">
         <label for="saveToQuickList" class="text-xs text-gray-600 font-bold cursor-pointer">
-          🍱 '자주 먹는 식품' 리스트에도 함께 저장하기
+          🍱 '자주 먹는 식품' 리스트에도 함께 저장/수정
         </label>
       </div>
 
-      <button type="submit" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-2.5 rounded-xl text-sm transition-colors shadow-sm">
-        기록 저장하기
-      </button>
+      <div class="flex gap-2">
+        <button type="submit" id="submitFormBtn" class="flex-1 bg-gray-800 hover:bg-gray-900 text-white font-bold py-2.5 rounded-xl text-sm transition-colors shadow-sm">
+          기록 저장하기
+        </button>
+        <button type="button" id="cancelEditBtn" onclick="cancelEditingFood()" class="hidden bg-gray-200 text-gray-600 font-bold px-3 py-2.5 rounded-xl text-xs">
+          취소
+        </button>
+      </div>
     </form>
   </div>
 
@@ -178,7 +227,9 @@
   </div>
 
   <script>
-    const TARGETS = { protein: 165, carbs: 160, fat: 48, fiber: 25 };
+    // 기본 목표 가이드라인 (Google Keep 지침 기반 비율: 76.9kg -> P165, C160, F48, Fib25)
+    let targets = JSON.parse(localStorage.getItem('nutritionCustomTargets')) || { protein: 165, carbs: 160, fat: 48, fiber: 25 };
+    let isManualTarget = JSON.parse(localStorage.getItem('isManualTarget')) || false;
 
     const suppRoutines = {
       morning: [
@@ -219,11 +270,13 @@
     ];
 
     let foodItems = JSON.parse(localStorage.getItem('nutritionFoodItems')) || defaultFoodItems;
+    let weightMap = JSON.parse(localStorage.getItem('nutritionWeightMap')) || {};
     let selectedDate = new Date();
     let currentSuppTab = 'morning';
     let selectedSuppIndices = new Set();
     let selectedFoodIndices = new Set();
     let logsMap = JSON.parse(localStorage.getItem('nutritionLogsMap')) || {};
+    let editingFoodIndex = null;
 
     function formatDateKey(dateObj) {
       const y = dateObj.getFullYear();
@@ -234,7 +287,68 @@
 
     document.getElementById('datePicker').value = formatDateKey(selectedDate);
 
-    // --- 영양제 루틴 제어 함수 ---
+    // --- 체중 및 목표 자동 계산 로직 ---
+    function updateTargetsFromWeight(weight) {
+      if (isManualTarget) return; // 수동 세팅 모드일 경우 자동 계산 건너뜀
+      if (!weight || weight <= 0) return;
+
+      // Google Keep 기준 계산 공식: 체중 1kg 당 P 2.15g, C 2.08g, F 0.62g
+      targets = {
+        protein: Math.round(weight * 2.1456),
+        carbs: Math.round(weight * 2.0806),
+        fat: Math.round(weight * 0.6242),
+        fiber: 25
+      };
+      localStorage.setItem('nutritionCustomTargets', JSON.stringify(targets));
+    }
+
+    function onWeightChange(e) {
+      const val = parseFloat(e.target.value);
+      const selectedKey = formatDateKey(selectedDate);
+      if (!isNaN(val) && val > 0) {
+        weightMap[selectedKey] = val;
+        localStorage.setItem('nutritionWeightMap', JSON.stringify(weightMap));
+        updateTargetsFromWeight(val);
+        render();
+      }
+    }
+
+    function toggleTargetModal() {
+      const modal = document.getElementById('targetModal');
+      modal.classList.toggle('hidden');
+      if (!modal.classList.contains('hidden')) {
+        document.getElementById('manualTargetProtein').value = targets.protein;
+        document.getElementById('manualTargetCarbs').value = targets.carbs;
+        document.getElementById('manualTargetFat').value = targets.fat;
+        document.getElementById('manualTargetFiber').value = targets.fiber;
+      }
+    }
+
+    function saveManualTargets() {
+      targets = {
+        protein: Number(document.getElementById('manualTargetProtein').value || 165),
+        carbs: Number(document.getElementById('manualTargetCarbs').value || 160),
+        fat: Number(document.getElementById('manualTargetFat').value || 48),
+        fiber: Number(document.getElementById('manualTargetFiber').value || 25)
+      };
+      isManualTarget = true;
+      localStorage.setItem('nutritionCustomTargets', JSON.stringify(targets));
+      localStorage.setItem('isManualTarget', JSON.stringify(true));
+      toggleTargetModal();
+      render();
+    }
+
+    function resetTargetsToWeight() {
+      isManualTarget = false;
+      localStorage.setItem('isManualTarget', JSON.stringify(false));
+      const selectedKey = formatDateKey(selectedDate);
+      const currentWeight = weightMap[selectedKey] || 76.9;
+      updateTargetsFromWeight(currentWeight);
+      toggleTargetModal();
+      render();
+    }
+
+    // --- 영양제 루틴 제어 ---
     function switchSuppTab(tab) {
       currentSuppTab = tab;
       const tabs = ['morning', 'lunch', 'dinner'];
@@ -331,7 +445,7 @@
       render();
     }
 
-    // --- 자주 먹는 식품 제어 함수 ---
+    // --- 자주 먹는 식품 제어 ---
     function toggleFoodSelection(index) {
       if (selectedFoodIndices.has(index)) {
         selectedFoodIndices.delete(index);
@@ -340,6 +454,46 @@
       }
       renderFoodButtons();
       updateFoodSummary();
+    }
+
+    function startEditingFood(index, event) {
+      event.stopPropagation();
+      editingFoodIndex = index;
+      const item = foodItems[index];
+
+      document.getElementById('foodName').value = item.name;
+      document.getElementById('proteinGrams').value = item.protein;
+      document.getElementById('carbsGrams').value = item.carbs;
+      document.getElementById('fatGrams').value = item.fat;
+      document.getElementById('fiberGrams').value = item.fiber;
+      document.getElementById('calories').value = item.kcal;
+      document.getElementById('saveToQuickList').checked = true;
+
+      document.getElementById('formTitle').innerText = `✏️ '${item.name}' 성분 수정 중`;
+      document.getElementById('submitFormBtn').innerText = '식품 성분 수정 반영하기';
+      document.getElementById('cancelEditBtn').classList.remove('hidden');
+
+      document.getElementById('inputFormCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function deleteFoodItem(index, event) {
+      event.stopPropagation();
+      const item = foodItems[index];
+      if (confirm(`'${item.name}' 항목을 자주 먹는 식품 목록에서 삭제하시겠습니까?`)) {
+        foodItems.splice(index, 1);
+        selectedFoodIndices.delete(index);
+        localStorage.setItem('nutritionFoodItems', JSON.stringify(foodItems));
+        renderFoodButtons();
+        updateFoodSummary();
+      }
+    }
+
+    function cancelEditingFood() {
+      editingFoodIndex = null;
+      document.getElementById('trackerForm').reset();
+      document.getElementById('formTitle').innerText = '＋ 수동 직접 입력';
+      document.getElementById('submitFormBtn').innerText = '기록 저장하기';
+      document.getElementById('cancelEditBtn').classList.add('hidden');
     }
 
     function clearFoodSelection() {
@@ -381,16 +535,25 @@
 
       foodItems.forEach((item, index) => {
         const isSelected = selectedFoodIndices.has(index);
-        const btn = document.createElement('div');
-        btn.onclick = () => toggleFoodSelection(index);
-        btn.className = `flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all shadow-xs ${
-          isSelected ? 'bg-blue-600 text-white ring-2 ring-blue-300' : 'bg-blue-50 border border-blue-100 hover:bg-blue-100 text-blue-900'
+        const card = document.createElement('div');
+        card.onclick = () => toggleFoodSelection(index);
+        card.className = `flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold cursor-pointer transition-all border ${
+          isSelected ? 'bg-blue-600 text-white border-blue-600 shadow-xs' : 'bg-blue-50/60 border-blue-100 hover:bg-blue-100 text-blue-900'
         }`;
-        btn.innerHTML = `
-          <span>${isSelected ? '✓ ' : ''}${item.name}</span>
-          <span class="text-[10px] ${isSelected ? 'bg-blue-800 text-white' : 'bg-blue-200 text-blue-900'} px-1.5 py-0.5 rounded-md">+${item.protein}g</span>
+
+        card.innerHTML = `
+          <div class="flex items-center gap-1.5 flex-1 pr-2 truncate">
+            <span>${isSelected ? '✓ ' : ''}${item.name}</span>
+            <span class="text-[10px] ${isSelected ? 'bg-blue-800 text-white' : 'bg-blue-200 text-blue-900'} px-1.5 py-0.5 rounded-md font-extrabold shrink-0">
+              P:${item.protein}g / ${item.kcal}kcal
+            </span>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button onclick="startEditingFood(${index}, event)" class="p-1 text-xs opacity-70 hover:opacity-100" title="성분 수정">✏️</button>
+            <button onclick="deleteFoodItem(${index}, event)" class="p-1 text-xs text-red-400 hover:text-red-600 font-bold" title="삭제">✕</button>
+          </div>
         `;
-        container.appendChild(btn);
+        container.appendChild(card);
       });
     }
 
@@ -423,14 +586,14 @@
     }
 
     function resetFoodItemsToDefault() {
-      if (confirm('자주 먹는 식품 리스트를 초기화하시겠습니까?')) {
+      if (confirm('자주 먹는 식품 리스트를 기본값으로 초기화하시겠습니까?')) {
         foodItems = [...defaultFoodItems];
         localStorage.setItem('nutritionFoodItems', JSON.stringify(foodItems));
         clearFoodSelection();
       }
     }
 
-    // --- 공통 달력 & 기록 렌더링 ---
+    // --- 공통 달력 & 게이지 렌더링 ---
     function onDatePickerChange(e) {
       if (e.target.value) {
         selectedDate = new Date(e.target.value + 'T00:00:00');
@@ -460,6 +623,11 @@
       const selectedKey = formatDateKey(selectedDate);
       const todayKey = formatDateKey(new Date());
 
+      // 체중 불러오기 및 반영
+      const currentWeight = weightMap[selectedKey] || 76.9;
+      document.getElementById('weightInput').value = currentWeight;
+      updateTargetsFromWeight(currentWeight);
+
       // 1. Weekly Grid
       const weekDays = getWeekDays(selectedDate);
       const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
@@ -475,7 +643,7 @@
         const key = formatDateKey(dayObj);
         const dayLogs = logsMap[key] || [];
         const dayProtein = dayLogs.reduce((sum, l) => sum + Number(l.protein || 0), 0);
-        const dayPct = Math.min(Math.round((dayProtein / TARGETS.protein) * 100), 100);
+        const dayPct = Math.min(Math.round((dayProtein / targets.protein) * 100), 100);
 
         const isSelected = key === selectedKey;
         const isToday = key === todayKey;
@@ -512,14 +680,15 @@
         const roundCurr = Math.round(curr * 10) / 10;
         const pct = Math.min(Math.round((curr / target) * 100), 100);
         document.getElementById(`curr${id}`).innerText = roundCurr;
+        document.getElementById(`target${id}`).innerText = target;
         document.getElementById(`pct${id}`).innerText = pct;
         document.getElementById(`bar${id}`).style.width = pct + '%';
       };
 
-      updateBar('Protein', totals.protein, TARGETS.protein);
-      updateBar('Carbs', totals.carbs, TARGETS.carbs);
-      updateBar('Fat', totals.fat, TARGETS.fat);
-      updateBar('Fiber', totals.fiber, TARGETS.fiber);
+      updateBar('Protein', totals.protein, targets.protein);
+      updateBar('Carbs', totals.carbs, targets.carbs);
+      updateBar('Fat', totals.fat, targets.fat);
+      updateBar('Fiber', totals.fiber, targets.fiber);
 
       document.getElementById('totalKcalDisplay').innerText = `총 ${Math.round(totals.kcal)} kcal`;
       document.getElementById('selectedDateTitle').innerText = selectedKey === todayKey ? '오늘의 영양 달성률' : `${selectedKey} 영양 달성률`;
@@ -556,7 +725,6 @@
       }
     }
 
-    // --- 수동 직접 입력 및 자주 먹는 식품 자동 추가 처리 ---
     function addEntry(e) {
       e.preventDefault();
       const selectedKey = formatDateKey(selectedDate);
@@ -571,9 +739,16 @@
       const now = new Date();
       const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 
+      if (editingFoodIndex !== null) {
+        foodItems[editingFoodIndex] = { name, protein, carbs, fat, fiber, kcal };
+        localStorage.setItem('nutritionFoodItems', JSON.stringify(foodItems));
+        cancelEditingFood();
+        render();
+        return;
+      }
+
       if (!logsMap[selectedKey]) logsMap[selectedKey] = [];
 
-      // 1. 오늘 식단 타임라인에 기록 저장
       logsMap[selectedKey].push({
         name,
         protein,
@@ -585,7 +760,6 @@
       });
       localStorage.setItem('nutritionLogsMap', JSON.stringify(logsMap));
 
-      // 2. '자주 먹는 식품에 함께 저장' 체크 시 리스트에 추가
       if (saveToQuick) {
         const exists = foodItems.some(item => item.name === name);
         if (!exists) {
@@ -611,7 +785,9 @@
       const selectedKey = formatDateKey(selectedDate);
       if (confirm(`${selectedKey} 기록을 전부 초기화하시겠습니까?`)) {
         delete logsMap[selectedKey];
+        delete weightMap[selectedKey];
         localStorage.setItem('nutritionLogsMap', JSON.stringify(logsMap));
+        localStorage.setItem('nutritionWeightMap', JSON.stringify(weightMap));
         render();
       }
     }
