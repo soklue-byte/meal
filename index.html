@@ -2,9 +2,15 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>단백질 & 식단 관리 앱</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* input 포커스 시 줌 방지를 위한 16px 이상 폰트 크기 강제 적용 */
+    input {
+      font-size: 16px !important;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 min-h-screen p-4 max-w-md mx-auto space-y-4">
 
@@ -19,7 +25,7 @@
     <div class="flex justify-between items-center mb-3">
       <span id="currentWeekRange" class="text-xs font-bold text-gray-500">2026.08.02 - 08.08</span>
       <input type="date" id="datePicker" onchange="onDatePickerChange(event)" 
-        class="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:border-blue-500 text-gray-700 font-medium">
+        class="border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:border-blue-500 text-gray-700 font-medium">
     </div>
     <div id="weeklyGrid" class="grid grid-cols-7 gap-1 text-center"></div>
   </div>
@@ -29,7 +35,7 @@
     <div class="flex items-center gap-2 flex-1">
       <span class="text-xs font-bold text-gray-700 shrink-0">⚖️ 공복 체중</span>
       <input type="number" step="0.1" inputmode="decimal" id="weightInput" onchange="onWeightChange(event)" placeholder="76.9" 
-        class="w-20 px-2.5 py-1 text-xs border border-gray-200 rounded-xl font-bold text-blue-900 focus:outline-none focus:border-blue-500 text-center bg-blue-50/50">
+        class="w-20 px-2.5 py-1 border border-gray-200 rounded-xl font-bold text-blue-900 focus:outline-none focus:border-blue-500 text-center bg-blue-50/50">
       <span class="text-xs font-bold text-gray-500">kg</span>
     </div>
     <button onclick="toggleTargetModal()" class="text-xs text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-xl font-bold border border-blue-100 hover:bg-blue-100 transition-colors shrink-0">
@@ -37,7 +43,7 @@
     </button>
   </div>
 
-  <!-- Manual Target Setting Modal (Hidden by Default) -->
+  <!-- Manual Target Setting Modal -->
   <div id="targetModal" class="hidden bg-white p-4 rounded-2xl shadow-lg border border-blue-200 space-y-3">
     <div class="flex justify-between items-center">
       <h3 class="text-xs font-bold text-gray-800">🎯 영양 목표 수동 직접 설정</h3>
@@ -47,19 +53,19 @@
     <div class="grid grid-cols-2 gap-2">
       <div>
         <label class="text-[10px] font-bold text-blue-600">💪 단백질 (g)</label>
-        <input type="number" id="manualTargetProtein" inputmode="decimal" class="w-full px-2 py-1 text-xs border rounded-lg">
+        <input type="number" id="manualTargetProtein" inputmode="decimal" class="w-full px-2 py-1 border rounded-lg">
       </div>
       <div>
         <label class="text-[10px] font-bold text-amber-600">🍚 탄수화물 (g)</label>
-        <input type="number" id="manualTargetCarbs" inputmode="decimal" class="w-full px-2 py-1 text-xs border rounded-lg">
+        <input type="number" id="manualTargetCarbs" inputmode="decimal" class="w-full px-2 py-1 border rounded-lg">
       </div>
       <div>
         <label class="text-[10px] font-bold text-rose-600">🥑 지방 (g)</label>
-        <input type="number" id="manualTargetFat" inputmode="decimal" class="w-full px-2 py-1 text-xs border rounded-lg">
+        <input type="number" id="manualTargetFat" inputmode="decimal" class="w-full px-2 py-1 border rounded-lg">
       </div>
       <div>
         <label class="text-[10px] font-bold text-emerald-600">🥗 식이섬유 (g)</label>
-        <input type="number" id="manualTargetFiber" inputmode="decimal" class="w-full px-2 py-1 text-xs border rounded-lg">
+        <input type="number" id="manualTargetFiber" inputmode="decimal" class="w-full px-2 py-1 border rounded-lg">
       </div>
     </div>
     <div class="flex gap-2 pt-1">
@@ -189,16 +195,16 @@
     <form id="trackerForm" onsubmit="addEntry(event)" class="space-y-3">
       <div>
         <input type="text" id="foodName" placeholder="식품명 또는 영양제명" required 
-          class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+          class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
       </div>
       <div class="grid grid-cols-2 gap-2">
-        <input type="number" step="0.1" inputmode="decimal" id="proteinGrams" placeholder="단백질 (g)" required class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
-        <input type="number" step="0.1" inputmode="decimal" id="carbsGrams" placeholder="탄수화물 (g)" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+        <input type="number" step="0.1" inputmode="decimal" id="proteinGrams" placeholder="단백질 (g)" required class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+        <input type="number" step="0.1" inputmode="decimal" id="carbsGrams" placeholder="탄수화물 (g)" class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
       </div>
       <div class="grid grid-cols-3 gap-2">
-        <input type="number" step="0.1" inputmode="decimal" id="fatGrams" placeholder="지방 (g)" class="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
-        <input type="number" step="0.1" inputmode="decimal" id="fiberGrams" placeholder="식이섬유 (g)" class="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
-        <input type="number" step="0.1" inputmode="decimal" id="calories" placeholder="칼로리 (kcal)" class="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+        <input type="number" step="0.1" inputmode="decimal" id="fatGrams" placeholder="지방 (g)" class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+        <input type="number" step="0.1" inputmode="decimal" id="fiberGrams" placeholder="식이섬유 (g)" class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+        <input type="number" step="0.1" inputmode="decimal" id="calories" placeholder="칼로리 (kcal)" class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
       </div>
       
       <!-- '자주 먹는 식품에 함께 추가' 체크박스 -->
@@ -227,7 +233,6 @@
   </div>
 
   <script>
-    // 기본 목표 가이드라인 (Google Keep 지침 기반 비율: 76.9kg -> P165, C160, F48, Fib25)
     let targets = JSON.parse(localStorage.getItem('nutritionCustomTargets')) || { protein: 165, carbs: 160, fat: 48, fiber: 25 };
     let isManualTarget = JSON.parse(localStorage.getItem('isManualTarget')) || false;
 
@@ -287,12 +292,11 @@
 
     document.getElementById('datePicker').value = formatDateKey(selectedDate);
 
-    // --- 체중 및 목표 자동 계산 로직 ---
+    // --- 체중 및 목표 자동 계산 ---
     function updateTargetsFromWeight(weight) {
-      if (isManualTarget) return; // 수동 세팅 모드일 경우 자동 계산 건너뜀
+      if (isManualTarget) return;
       if (!weight || weight <= 0) return;
 
-      // Google Keep 기준 계산 공식: 체중 1kg 당 P 2.15g, C 2.08g, F 0.62g
       targets = {
         protein: Math.round(weight * 2.1456),
         carbs: Math.round(weight * 2.0806),
@@ -623,7 +627,6 @@
       const selectedKey = formatDateKey(selectedDate);
       const todayKey = formatDateKey(new Date());
 
-      // 체중 불러오기 및 반영
       const currentWeight = weightMap[selectedKey] || 76.9;
       document.getElementById('weightInput').value = currentWeight;
       updateTargetsFromWeight(currentWeight);
