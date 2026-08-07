@@ -10,8 +10,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
-    /* 모든 입력창 및 드롭다운 높이 42px로 표준화 */
-    input, select { font-size: 16px !important; height: 42px !important; }
+    /* 입력창 및 드롭다운 높이 표준화 */
+    input, select { font-size: 16px !important; }
     .ring-svg { transform: rotate(-90deg); }
     .ring-circle { transition: stroke-dashoffset 0.5s ease-in-out; }
     .tab-content { display: none; }
@@ -35,12 +35,12 @@
     </div>
   </div>
 
-  <!-- 프로필 모달 -->
+  <!-- 프로필 모달 (숫자 키패드 적용 & 닫기 버튼 확대) -->
   <div id="profileModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
         <h3 class="text-sm font-bold text-gray-800 flex items-center gap-1">👤 내 프로필 & BMR 설정</h3>
-        <button onclick="toggleProfileModal()" class="text-xs text-gray-400 font-bold">✕</button>
+        <button onclick="toggleProfileModal()" class="text-lg text-gray-400 hover:text-gray-700 font-black p-1 leading-none">✕</button>
       </div>
       
       <div class="grid grid-cols-4 gap-1 text-center bg-blue-50/60 p-2.5 rounded-2xl border border-blue-100 text-xs">
@@ -53,18 +53,27 @@
       <div class="grid grid-cols-2 gap-2 text-xs pt-1">
         <div class="col-span-2">
           <label class="text-[10px] text-blue-600 font-bold">사용자명 (이름)</label>
-          <input type="text" id="inputName" placeholder="지훈" class="w-full p-2 border rounded-xl font-bold text-gray-800">
+          <input type="text" id="inputName" placeholder="지훈" class="w-full h-10 px-3 border rounded-xl font-bold text-gray-800">
         </div>
-        <div><label class="text-[10px] text-gray-500 font-bold">키 (cm)</label><input type="number" id="inputHeight" placeholder="175" class="w-full p-2 border rounded-xl"></div>
-        <div><label class="text-[10px] text-gray-500 font-bold">나이</label><input type="number" id="inputAge" placeholder="30" class="w-full p-2 border rounded-xl"></div>
+        <div>
+          <label class="text-[10px] text-gray-500 font-bold">키 (cm)</label>
+          <input type="number" inputmode="numeric" pattern="[0-9]*" id="inputHeight" placeholder="175" class="w-full h-10 px-3 border rounded-xl">
+        </div>
+        <div>
+          <label class="text-[10px] text-gray-500 font-bold">나이</label>
+          <input type="number" inputmode="numeric" pattern="[0-9]*" id="inputAge" placeholder="30" class="w-full h-10 px-3 border rounded-xl">
+        </div>
         <div>
           <label class="text-[10px] text-gray-500 font-bold">성별</label>
-          <select id="inputGender" class="w-full p-2 border rounded-xl font-bold text-gray-800">
+          <select id="inputGender" class="w-full h-10 px-2 border rounded-xl font-bold text-gray-800">
             <option value="남성">남성</option>
             <option value="여성">여성</option>
           </select>
         </div>
-        <div><label class="text-[10px] text-blue-600 font-bold">기초대사량 (kcal)</label><input type="number" id="inputBmr" placeholder="1750" class="w-full p-2 border rounded-xl font-bold text-blue-900"></div>
+        <div>
+          <label class="text-[10px] text-blue-600 font-bold">기초대사량 (kcal)</label>
+          <input type="number" inputmode="numeric" pattern="[0-9]*" id="inputBmr" placeholder="1750" class="w-full h-10 px-3 border rounded-xl font-bold text-blue-900">
+        </div>
       </div>
 
       <div class="flex gap-2 pt-2">
@@ -82,7 +91,7 @@
       <div class="flex justify-between items-center mb-3">
         <span class="text-xs font-bold text-gray-700">주간 피트니스 링</span>
         <input type="date" id="datePicker" onchange="onDatePickerChange(event)" 
-          class="border border-gray-200 rounded-xl px-2.5 py-1 text-xs font-bold focus:outline-none focus:border-blue-500 text-gray-700">
+          class="border border-gray-200 rounded-xl px-2.5 py-1 text-xs font-bold focus:outline-none focus:border-blue-500 text-gray-700 h-8">
       </div>
       <div id="weeklyGrid" class="grid grid-cols-7 gap-1 text-center"></div>
     </div>
@@ -92,7 +101,7 @@
       <div class="flex items-center gap-2 flex-1">
         <span class="text-xs font-bold text-gray-700 shrink-0">⚖️ 공복 체중</span>
         <input type="number" step="0.1" inputmode="decimal" id="weightInput" onchange="onWeightChange(event)" placeholder="76.9" 
-          class="w-20 px-2.5 py-1 border border-blue-200 rounded-xl font-bold text-blue-600 focus:outline-none focus:border-blue-500 text-center bg-blue-50/30">
+          class="w-20 h-9 px-2.5 border border-blue-200 rounded-xl font-bold text-blue-600 focus:outline-none focus:border-blue-500 text-center bg-blue-50/30">
         <span class="text-xs font-bold text-gray-500">kg</span>
       </div>
       <button onclick="toggleTargetModal()" class="text-xs text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-xl font-bold border border-blue-100 hover:bg-blue-100 transition-colors shrink-0">
@@ -104,13 +113,13 @@
     <div id="targetModal" class="hidden bg-white p-4 rounded-2xl shadow-lg border border-blue-200 space-y-3">
       <div class="flex justify-between items-center">
         <h3 class="text-xs font-bold text-gray-800">🎯 영양 목표 수동 직접 설정</h3>
-        <button onclick="toggleTargetModal()" class="text-xs text-gray-400 font-bold">✕</button>
+        <button onclick="toggleTargetModal()" class="text-base font-black text-gray-400 p-1">✕</button>
       </div>
       <div class="grid grid-cols-2 gap-2">
-        <div><label class="text-[10px] font-bold text-blue-600">🔥 칼로리 (kcal)</label><input type="number" id="manualTargetKcal" inputmode="decimal" class="w-full px-2 py-1 border rounded-lg"></div>
-        <div><label class="text-[10px] font-bold text-blue-600">💪 단백질 (g)</label><input type="number" id="manualTargetProtein" inputmode="decimal" class="w-full px-2 py-1 border rounded-lg"></div>
-        <div><label class="text-[10px] font-bold text-amber-600">🍚 탄수화물 (g)</label><input type="number" id="manualTargetCarbs" inputmode="decimal" class="w-full px-2 py-1 border rounded-lg"></div>
-        <div><label class="text-[10px] font-bold text-rose-500">🥑 지방 (g)</label><input type="number" id="manualTargetFat" inputmode="decimal" class="w-full px-2 py-1 border rounded-lg"></div>
+        <div><label class="text-[10px] font-bold text-blue-600">🔥 칼로리 (kcal)</label><input type="number" inputmode="numeric" pattern="[0-9]*" id="manualTargetKcal" class="w-full h-9 px-2 border rounded-lg"></div>
+        <div><label class="text-[10px] font-bold text-blue-600">💪 단백질 (g)</label><input type="number" inputmode="numeric" pattern="[0-9]*" id="manualTargetProtein" class="w-full h-9 px-2 border rounded-lg"></div>
+        <div><label class="text-[10px] font-bold text-amber-600">🍚 탄수화물 (g)</label><input type="number" inputmode="numeric" pattern="[0-9]*" id="manualTargetCarbs" class="w-full h-9 px-2 border rounded-lg"></div>
+        <div><label class="text-[10px] font-bold text-rose-500">🥑 지방 (g)</label><input type="number" inputmode="numeric" pattern="[0-9]*" id="manualTargetFat" class="w-full h-9 px-2 border rounded-lg"></div>
       </div>
       <div class="flex gap-2 pt-1">
         <button onclick="saveManualTargets()" class="flex-1 bg-blue-600 text-white font-bold py-1.5 rounded-lg text-xs shadow-xs">수동 설정 저장</button>
@@ -118,7 +127,7 @@
       </div>
     </div>
 
-    <!-- 칼로리 적자 (Deficit) 대시보드 -->
+    <!-- 칼로리 적자 대시보드 -->
     <div class="bg-gradient-to-br from-blue-900 to-indigo-900 rounded-3xl p-4 text-white shadow-md space-y-2">
       <div class="flex justify-between items-center">
         <span class="text-xs font-bold text-blue-200">🔥 실시간 칼로리 적자 (Deficit)</span>
@@ -236,10 +245,8 @@
         </button>
       </div>
 
-      <!-- 슬림해진 영양제 체크리스트 -->
       <div id="activeSuppChecklist" class="flex flex-col gap-1.5 pt-1"></div>
 
-      <!-- 동적 완료/수정하기/저장하기 버튼 -->
       <button id="suppSubmitBtn" onclick="submitSupplements()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-sm transition-colors mt-2">
         저장하기
       </button>
@@ -253,27 +260,28 @@
       </div>
     </div>
 
+    <!-- 영양제 편집 모달 -->
     <div id="suppEditModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
         <div class="flex justify-between items-center border-b pb-2 shrink-0">
           <h3 class="text-xs font-bold text-purple-900">💊 영양제 목록 추가 / 삭제</h3>
-          <button onclick="closeSuppEditModal()" class="text-xs text-gray-400 font-bold">✕</button>
+          <button onclick="closeSuppEditModal()" class="text-lg text-gray-400 hover:text-gray-700 font-black p-1 leading-none">✕</button>
         </div>
         
         <form onsubmit="addNewSuppItem(event)" class="space-y-2 bg-purple-50/50 p-3 rounded-xl shrink-0">
           <div class="text-[11px] font-bold text-purple-800">＋ 새 영양제 등록</div>
           <div class="flex gap-2">
-            <select id="newSuppTime" class="text-xs border rounded-lg px-2 py-1 font-bold text-purple-900">
+            <select id="newSuppTime" class="text-xs border rounded-lg px-2 h-10 font-bold text-purple-900 bg-white">
               <option value="morning">🌅 아침</option>
               <option value="lunch">☀️ 점심</option>
               <option value="dinner">🌙 저녁</option>
             </select>
-            <input type="text" id="newSuppName" placeholder="영양제 제품명" required class="flex-1 px-2 py-1 text-xs border rounded-lg">
+            <input type="text" id="newSuppName" placeholder="영양제 제품명" required class="flex-1 px-2.5 h-10 text-xs border rounded-lg">
           </div>
           <div>
-            <input type="text" id="newSuppIngredient" placeholder="주요 성분 (예: 비타민 D 5000IU, 아연 15mg)" required class="w-full px-2 py-1 text-xs border rounded-lg font-bold text-purple-900 bg-white">
+            <input type="text" id="newSuppIngredient" placeholder="주요 성분 (예: 비타민 D 5000IU, 아연 15mg)" required class="w-full px-2.5 h-10 text-xs border rounded-lg font-bold text-purple-900 bg-white">
           </div>
-          <button type="submit" class="w-full bg-purple-600 text-white font-bold py-1.5 rounded-lg text-xs mt-1">영양제 추가 저장</button>
+          <button type="submit" class="w-full bg-purple-600 text-white font-bold py-2 rounded-lg text-xs mt-1">영양제 추가 저장</button>
         </form>
 
         <div class="flex-1 overflow-y-auto space-y-2">
@@ -295,7 +303,6 @@
       </div>
 
       <form id="trackerForm" onsubmit="addEntry(event)" class="space-y-3">
-        <!-- 사진 업로드 UI 통일 -->
         <div>
           <label for="foodPhotoInput" class="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-white hover:bg-gray-50 transition-colors">
             <span class="text-lg">📸</span>
@@ -315,28 +322,27 @@
           </button>
         </div>
 
-        <!-- 식품명과 카테고리 가로 2열 배치 -->
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="text-[10px] font-bold text-gray-500 mb-1 block">식품명</label>
-            <input type="text" id="foodName" placeholder="식품명 입력" required class="w-full px-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-bold">
+            <input type="text" id="foodName" placeholder="식품명 입력" required class="w-full h-10 px-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-bold">
           </div>
           <div>
             <label class="text-[10px] font-bold text-gray-500 mb-1 block">🏷️ 카테고리</label>
-            <select id="foodCategorySelect" class="w-full px-2 text-xs border border-gray-200 rounded-xl font-bold text-gray-700 focus:outline-none focus:border-blue-500">
+            <select id="foodCategorySelect" class="w-full h-10 px-2 text-xs border border-gray-200 rounded-xl font-bold text-gray-700 focus:outline-none focus:border-blue-500">
               <option value="">- 선택하기 -</option>
             </select>
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
-          <input type="number" step="0.1" inputmode="decimal" id="proteinGrams" placeholder="단백질 (g)" required class="w-full px-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
-          <input type="number" step="0.1" inputmode="decimal" id="carbsGrams" placeholder="탄수화물 (g)" class="w-full px-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+          <input type="number" step="0.1" inputmode="decimal" id="proteinGrams" placeholder="단백질 (g)" required class="w-full h-10 px-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+          <input type="number" step="0.1" inputmode="decimal" id="carbsGrams" placeholder="탄수화물 (g)" class="w-full h-10 px-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
         </div>
         <div class="grid grid-cols-3 gap-2">
-          <input type="number" step="0.1" inputmode="decimal" id="fatGrams" placeholder="지방 (g)" class="w-full px-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
-          <input type="number" step="0.1" inputmode="decimal" id="fiberGrams" placeholder="식이섬유 (g)" class="w-full px-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
-          <input type="number" step="0.1" inputmode="decimal" id="calories" placeholder="칼로리 (kcal)" class="w-full px-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+          <input type="number" step="0.1" inputmode="decimal" id="fatGrams" placeholder="지방 (g)" class="w-full h-10 px-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+          <input type="number" step="0.1" inputmode="decimal" id="fiberGrams" placeholder="식이섬유 (g)" class="w-full h-10 px-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+          <input type="number" step="0.1" inputmode="decimal" id="calories" placeholder="칼로리 (kcal)" class="w-full h-10 px-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
         </div>
         
         <div class="flex items-center gap-2 pt-1">
@@ -352,60 +358,64 @@
     </div>
   </div>
 
-  <!-- 자주 먹는 식품 복수 선택 모달 -->
+  <!-- 자주 먹는 식품 복수 선택 모달 (동일 버튼 높이 h-11 적용) -->
   <div id="quickFoodModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-3 max-h-[85vh] flex flex-col">
       <div class="flex justify-between items-center border-b pb-2 shrink-0">
         <h3 class="text-sm font-bold text-gray-800 flex items-center gap-1.5"><span>🍱 자주 먹는 식품 선택</span></h3>
-        <button onclick="closeQuickFoodModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-3 py-1.5 rounded-xl text-xs">✕ 닫기</button>
+        <button onclick="closeQuickFoodModal()" class="text-lg font-black text-gray-400 hover:text-gray-700 p-1">✕</button>
       </div>
 
       <div id="quickFoodCategoryTabs" class="flex bg-gray-100 p-1 rounded-2xl text-[11px] font-bold shrink-0 overflow-x-auto gap-1"></div>
       <div id="quickFoodModalList" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
 
+      <!-- 하단 버튼 높이 및 스타일 h-11 로 균형 통일 -->
       <div class="pt-2 border-t space-y-2 shrink-0">
-        <button onclick="submitMultipleQuickFoods()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-2xl text-xs shadow-md">선택한 식품 식단에 저장하기</button>
-        <button onclick="closeQuickFoodModal()" class="w-full bg-gray-100 text-gray-500 font-bold py-2 rounded-xl text-xs">취소하기</button>
+        <button onclick="submitMultipleQuickFoods()" class="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl text-xs shadow-md">선택한 식품 식단에 저장하기</button>
+        <button onclick="closeQuickFoodModal()" class="w-full h-11 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-2xl text-xs">취소하기</button>
       </div>
     </div>
   </div>
 
-  <!-- 자주 먹는 식품 카테고리 관리 모달 (카테고리 개별 삭제 기능 포함) -->
+  <!-- 카테고리 추가/삭제 레이아웃 교정 모달 -->
   <div id="manageQuickFoodModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
       <div class="flex justify-between items-center border-b pb-2 shrink-0">
         <h3 class="text-sm font-bold text-gray-800">⚙️ 자주 먹는 식품 & 카테고리 커스텀 관리</h3>
-        <button onclick="closeManageQuickFoodModal()" class="text-xs text-gray-400 font-bold">✕</button>
+        <button onclick="closeManageQuickFoodModal()" class="text-lg font-black text-gray-400 hover:text-gray-700 p-1">✕</button>
       </div>
 
-      <!-- 이모지 포함 신규 카테고리 추가 -->
-      <form onsubmit="addNewCategory(event)" class="flex gap-2 bg-blue-50/60 p-2.5 rounded-2xl border border-blue-100 shrink-0 items-center">
-        <select id="newCategoryEmoji" class="text-xs border rounded-xl px-2 font-bold bg-white shrink-0">
-          <option value="🥗">🥗</option>
-          <option value="🍱">🍱</option>
-          <option value="🥤">🥤</option>
-          <option value="🍞">🍞</option>
-          <option value="🥩">🥩</option>
-          <option value="🍗">🍗</option>
-          <option value="🍎">🍎</option>
-          <option value="🍰">🍰</option>
-          <option value="🥛">🥛</option>
-          <option value="☕">☕</option>
-        </select>
-        <input type="text" id="newCategoryInput" placeholder="카테고리명 (예: 샐러드)" required class="flex-1 px-3 text-xs border rounded-xl font-bold bg-white">
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 rounded-xl text-xs shrink-0">＋ 추가</button>
+      <!-- 모바일 화면 깨짐 방지 폼 레이아웃 (Flex-wrap & 너비 최적화) -->
+      <form onsubmit="addNewCategory(event)" class="space-y-2 bg-blue-50/60 p-3 rounded-2xl border border-blue-100 shrink-0">
+        <div class="text-[11px] font-bold text-blue-900">＋ 신규 카테고리 추가</div>
+        <div class="flex items-center gap-2">
+          <select id="newCategoryEmoji" class="h-10 text-sm border rounded-xl px-2 font-bold bg-white shrink-0">
+            <option value="🥗">🥗</option>
+            <option value="🍱">🍱</option>
+            <option value="🥤">🥤</option>
+            <option value="🍞">🍞</option>
+            <option value="🥩">🥩</option>
+            <option value="🍗">🍗</option>
+            <option value="🍎">🍎</option>
+            <option value="🍰">🍰</option>
+            <option value="🥛">🥛</option>
+            <option value="☕">☕</option>
+          </select>
+          <input type="text" id="newCategoryInput" placeholder="카테고리명 (예: 샐러드)" required class="flex-1 h-10 px-3 text-xs border rounded-xl font-bold bg-white min-w-0">
+          <button type="submit" class="h-10 bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 rounded-xl text-xs shrink-0 whitespace-nowrap">추가</button>
+        </div>
       </form>
       
-      <!-- 생성된 카테고리 삭제 관리 태그 목록 -->
+      <!-- 등록된 카테고리 삭제 태그 목록 -->
       <div class="space-y-1 shrink-0">
-        <div class="text-[11px] font-bold text-gray-600">🏷️ 현재 등록된 카테고리 목록 (터치 시 삭제)</div>
+        <div class="text-[11px] font-bold text-gray-600">🏷️ 현재 등록된 카테고리 목록 (✕ 터치 시 삭제)</div>
         <div id="customCategoryTags" class="flex flex-wrap gap-1.5 pt-1"></div>
       </div>
 
       <div id="manageQuickFoodList" class="flex-1 overflow-y-auto space-y-2 pr-1 border-t pt-2"></div>
 
       <div class="pt-2 border-t shrink-0">
-        <button onclick="closeManageQuickFoodModal()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl text-xs">확인 완료</button>
+        <button onclick="closeManageQuickFoodModal()" class="w-full h-11 bg-blue-600 text-white font-bold rounded-xl text-xs">확인 완료</button>
       </div>
     </div>
   </div>
@@ -428,10 +438,10 @@
     <div class="bg-white rounded-2xl p-4 shadow-sm border border-emerald-100">
       <h2 class="text-xs font-bold text-gray-700 mb-3">＋ 수동 활동 칼로리 기입</h2>
       <form onsubmit="addWorkoutEntry(event)" class="space-y-3">
-        <div><input type="text" id="workoutName" placeholder="활동 종목 (예: 웨이트 트레이닝, 러닝)" required class="w-full px-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-500 font-bold"></div>
+        <div><input type="text" id="workoutName" placeholder="활동 종목 (예: 웨이트 트레이닝, 러닝)" required class="w-full h-10 px-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-500 font-bold"></div>
         <div class="grid grid-cols-2 gap-2">
-          <div><label class="text-[10px] font-bold text-gray-500">운동 시간 (분)</label><input type="number" inputmode="decimal" id="workoutDurationMin" placeholder="예: 60" class="w-full px-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-500"></div>
-          <div><label class="text-[10px] font-bold text-emerald-600">활동 소모 칼로리 (kcal)</label><input type="number" inputmode="decimal" id="workoutDuration" placeholder="예: 350" required class="w-full px-3 text-xs border border-emerald-200 bg-emerald-50/20 rounded-xl font-bold text-emerald-900 focus:outline-none focus:border-emerald-500"></div>
+          <div><label class="text-[10px] font-bold text-gray-500">운동 시간 (분)</label><input type="number" inputmode="decimal" id="workoutDurationMin" placeholder="예: 60" class="w-full h-10 px-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-500"></div>
+          <div><label class="text-[10px] font-bold text-emerald-600">활동 소모 칼로리 (kcal)</label><input type="number" inputmode="decimal" id="workoutDuration" placeholder="예: 350" required class="w-full h-10 px-3 text-xs border border-emerald-200 bg-emerald-50/20 rounded-xl font-bold text-emerald-900 focus:outline-none focus:border-emerald-500"></div>
         </div>
         <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-sm transition-colors shadow-sm">활동 칼로리 저장하기</button>
       </form>
@@ -443,13 +453,17 @@
     </div>
   </div>
 
-  <!-- TAB 5: 기록 -->
+  <!-- TAB 5: 기록 (초기화 버튼 및 삭제 텍스트 적용) -->
   <div id="tabTimeline" class="tab-content space-y-4">
     <div class="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 space-y-3">
       <div class="flex justify-between items-center">
         <h2 id="timelineDateTitle" class="text-xs font-bold text-gray-700">⏱️ 섭취 기록</h2>
-        <input type="date" id="timelineDatePicker" onchange="onTimelineDatePickerChange(event)" 
-          class="border border-gray-200 rounded-xl px-2.5 py-1 text-xs font-bold focus:outline-none focus:border-blue-500 text-gray-700">
+        <div class="flex items-center gap-1.5">
+          <!-- 기록 탭 전용 초기화 버튼 -->
+          <button onclick="resetSelectedDateData()" class="text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-1 rounded-xl border border-rose-100 hover:bg-rose-100">🗑️ 해당일 초기화</button>
+          <input type="date" id="timelineDatePicker" onchange="onTimelineDatePickerChange(event)" 
+            class="border border-gray-200 rounded-xl px-2 py-1 text-xs font-bold focus:outline-none focus:border-blue-500 text-gray-700 h-8">
+        </div>
       </div>
 
       <div class="flex bg-gray-100 p-1 rounded-2xl text-xs font-bold">
@@ -757,7 +771,7 @@
       document.getElementById('photoFileName').innerText = '식단 사진 추가하기 / 촬영 (선택)';
     }
 
-    // --- 카테고리 드롭다운 (- 선택하기 - 포함) ---
+    // --- 카테고리 드롭다운 (- 선택하기 - 지원) ---
     function updateCategoryDropdowns() {
       const selectEl = document.getElementById('foodCategorySelect');
       if (selectEl) {
@@ -881,7 +895,6 @@
       render();
     }
 
-    // 이모지 포함 카테고리 추가
     function addNewCategory(e) {
       e.preventDefault();
       const emoji = document.getElementById('newCategoryEmoji').value;
@@ -897,13 +910,11 @@
       }
     }
 
-    // 카테고리 개별 삭제 기능
     function deleteCategoryTag(catName) {
       if (confirm(`'${catName}' 카테고리를 삭제하시겠습니까?`)) {
         customFoodCategories = customFoodCategories.filter(c => c !== catName);
         localStorage.setItem('nutritionCustomFoodCategories', JSON.stringify(customFoodCategories));
         
-        // 해당 카테고리를 가진 식품은 미지정으로 변경
         foodItems.forEach(item => {
           if (item.category === catName) item.category = '';
         });
@@ -998,7 +1009,6 @@
       updateSuppSubmitButtonState();
     }
 
-    // 슬림해진 영양제 체크리스트
     function renderActiveSuppChecklist() {
       const container = document.getElementById('activeSuppChecklist');
       if (!container) return;
@@ -1039,7 +1049,7 @@
       }
     }
 
-    // 버튼 상태(완료 vs 수정하기 vs 저장하기) 색상 및 문구 동적 반영
+    // 동적 버튼 상태 제어 (완료 / 수정하기 / 저장하기)
     function updateSuppSubmitButtonState() {
       const selectedKey = formatDateKey(selectedDate);
       const currentLogs = logsMap[selectedKey] || [];
@@ -1258,6 +1268,7 @@
       return week;
     }
 
+    // 기록 탭 삭제 버튼 텍스트 변경 적용 (✕ ➔ 삭제)
     function renderTimelineList() {
       const selectedKey = formatDateKey(selectedDate);
       const timelineTitle = document.getElementById('timelineDateTitle');
@@ -1290,7 +1301,7 @@
               `}
             </div>
           </div>
-          <button onclick="deleteEntry(${originalIndex})" class="text-gray-300 hover:text-red-500 text-xs font-bold px-2 py-1">✕</button>
+          <button onclick="deleteEntry(${originalIndex})" class="text-xs text-red-500 hover:text-red-700 font-bold bg-red-50 px-2.5 py-1.5 rounded-xl border border-red-100">삭제</button>
         `;
         logList.appendChild(item);
       });
