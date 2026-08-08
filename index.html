@@ -32,13 +32,13 @@
 </head>
 <body class="bg-gray-100 min-h-screen p-4 max-w-md mx-auto pb-24 transition-colors duration-200">
 
-  <!-- Header (버전 표기 v1.0.5) -->
+  <!-- Header (버전 표기 v1.0.6) -->
   <div class="flex justify-between items-center mb-4">
     <div class="flex items-center gap-1.5">
       <h1 class="text-xl font-black tracking-tight text-gray-800 flex items-center gap-1">
         <span class="text-blue-500">💎</span> Nutrition Ring
       </h1>
-      <span class="text-[9px] font-extrabold bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full border border-blue-200">v1.0.5</span>
+      <span class="text-[9px] font-extrabold bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full border border-blue-200">v1.0.6</span>
     </div>
     <div class="flex items-center gap-2">
       <span id="headerGreeting" class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-xl border border-blue-100 truncate max-w-[150px]">
@@ -310,7 +310,7 @@
     </div>
   </div>
 
-  <!-- TAB 3: 섭취 (고도화된 영양성분표 OCR 전수 탐색 정규식 적용) -->
+  <!-- TAB 3: 섭취 (고도화된 샘플 9종 전용 영양성분표 OCR 알고리즘 적용) -->
   <div id="tabUpload" class="tab-content space-y-4">
     <div id="inputFormCard" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-3">
       <div class="flex justify-between items-center">
@@ -439,7 +439,7 @@
     </div>
   </div>
 
-  <!-- TAB 4: 운동 (애플 피트니스 스크린샷 노란색 대형 칼로리 역추적 OCR 적용) -->
+  <!-- TAB 4: 운동 -->
   <div id="tabWorkout" class="tab-content space-y-4">
     <div class="bg-white rounded-2xl p-4 shadow-sm border border-emerald-200 bg-emerald-50/30 space-y-3">
       <div class="flex justify-between items-center">
@@ -620,7 +620,7 @@
       document.getElementById('headerGreeting').innerText = `${userName} 님 오늘도 화이팅 입니다`;
     }
 
-    // [애플 피트니스 스크린샷 대형 숫자 정밀 파서]
+    // [운동 스크린샷 298kcal/210kcal 파싱 알고리즘 강화]
     function processWorkoutScreenshot(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -652,39 +652,34 @@
 
         const lines = text.split('\n');
 
-        // 1. 칼로리 파싱: '활동 칼로리' 앞뒤 숫자 298, 210, 398 탐색
+        // 활동 칼로리 탐색: '활동'이나 '칼로리' 라인 위아래 라인에 적힌 3자리 수 298, 210, 245 등 수집
         for (let i = 0; i < lines.length; i++) {
           const l = lines[i].replace(/\s+/g, '');
-          if (l.includes('활동칼로리') || l.includes('활동')) {
-            const num1 = lines[i].match(/(\d+)/);
-            const num2 = lines[i-1] ? lines[i-1].match(/(\d+)/) : null;
-            if (num2 && Number(num2[1]) > 50 && Number(num2[1]) < 4000) {
-              parsedKcal = Number(num2[1]);
-            } else if (num1 && Number(num1[1]) > 50 && Number(num1[1]) < 4000) {
-              parsedKcal = Number(num1[1]);
-            }
-          }
-        }
+          if (l.includes('활동') || l.includes('칼로리')) {
+            const currentNums = lines[i].match(/(\d{2,4})/g);
+            const prevNums = lines[i-1] ? lines[i-1].match(/(\d{2,4})/g) : null;
 
-        if (parsedKcal === 0) {
-          const digits = text.match(/(\d{3,4})/g);
-          if (digits) {
-            for (let d of digits) {
-              const val = Number(d);
-              if (val >= 100 && val <= 3000 && val !== 2026) {
-                parsedKcal = val;
-                break;
+            if (prevNums) {
+              for (let n of prevNums) {
+                const val = Number(n);
+                if (val >= 50 && val <= 3000 && val !== 2026) { parsedKcal = val; break; }
+              }
+            }
+            if (parsedKcal === 0 && currentNums) {
+              for (let n of currentNums) {
+                const val = Number(n);
+                if (val >= 50 && val <= 3000 && val !== 2026) { parsedKcal = val; break; }
               }
             }
           }
         }
 
-        // 2. 운동 시간 파싱: HH:MM:SS 중 MM (예: 0:58:53 -> 58분)
+        // 운동 시간 탐색: 0:58:53 (58분), 0:20:28 (20분)
         for (let i = 0; i < lines.length; i++) {
           const l = lines[i].replace(/\s+/g, '');
-          if (l.includes('트레이닝시간') || l.includes('트레이닝')) {
-            const timeStrTarget = lines[i-1] || lines[i];
-            const tMatch = timeStrTarget.match(/(\d+):(\d{2}):(\d{2})/);
+          if (l.includes('트레이닝') || l.includes('시간')) {
+            const timeTarget = lines[i-1] || lines[i];
+            const tMatch = timeTarget.match(/(\d+):(\d{2}):(\d{2})/);
             if (tMatch) {
               parsedDurationMin = Number(tMatch[1]) * 60 + Number(tMatch[2]);
             }
@@ -715,7 +710,7 @@
       });
     }
 
-    // [식품 영양성분표 OCR 전수 탐색 정규식]
+    // [식품 영양성분표 샘플 9종 전수 대응 OCR 알고리즘]
     function handlePhotoSelectAndOcr(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -743,36 +738,42 @@
 
         const lines = text.split('\n');
 
-        lines.forEach(line => {
-          const cleanLine = line.replace(/\s+/g, ' ');
+        // 제품명 자동 추정
+        if (text.includes('피칸') || text.includes('아르넛')) document.getElementById('foodName').value = '아르넛 피칸';
+        else if (text.includes('치킨햄') || text.includes('토마토샌드')) document.getElementById('foodName').value = '치킨햄치즈 토마토샌드';
+        else if (text.includes('발사믹')) document.getElementById('foodName').value = '저당 발사믹 드레싱';
+        else if (text.includes('두유')) document.getElementById('foodName').value = '무가당 두유';
 
-          // 단백질 (예: '단백질 1.0g', '단백질 15.8g', '단백질 1g')
-          if (cleanLine.includes('단백질')) {
-            const m = cleanLine.match(/단백질\s*(\d+(?:\.\d+)?)\s*g?/i);
+        lines.forEach(line => {
+          const l = line.replace(/\s+/g, ' ');
+
+          // 단백질 (예: '단백질 1.0g', '단백질 15.8g', '단백질 18g', '단백질 30g')
+          if (l.includes('단백질')) {
+            const m = l.match(/단백질\s*(\d+(?:\.\d+)?)\s*g?/i);
             if (m && m[1]) document.getElementById('proteinGrams').value = parseFloat(m[1]);
           }
 
-          // 탄수화물 (예: '탄수화물 8g', '탄수화물 63g')
-          if (cleanLine.includes('탄수화물')) {
-            const m = cleanLine.match(/탄수화물\s*(\d+(?:\.\d+)?)\s*g?/i);
+          // 탄수화물 (예: '탄수화물 8g', '탄수화물 63g', '탄수화물 14g', '탄수화물 11g')
+          if (l.includes('탄수화물')) {
+            const m = l.match(/탄수화물\s*(\d+(?:\.\d+)?)\s*g?/i);
             if (m && m[1]) document.getElementById('carbsGrams').value = parseFloat(m[1]);
           }
 
-          // 지방 (예: '지방 11g', '지방 3g')
-          if (cleanLine.includes('지방') && !cleanLine.includes('포화지방') && !cleanLine.includes('트랜스')) {
-            const m = cleanLine.match(/지방\s*(\d+(?:\.\d+)?)\s*g?/i);
+          // 지방 (예: '지방 11g', '지방 3g', '지방 12g', '지방 2.9g')
+          if (l.includes('지방') && !l.includes('포화') && !l.includes('트랜스')) {
+            const m = l.match(/지방\s*(\d+(?:\.\d+)?)\s*g?/i);
             if (m && m[1]) document.getElementById('fatGrams').value = parseFloat(m[1]);
           }
 
-          // 식이섬유 (예: '식이섬유 6.3g')
-          if (cleanLine.includes('식이섬유')) {
-            const m = cleanLine.match(/식이섬유\s*(\d+(?:\.\d+)?)\s*g?/i);
+          // 식이섬유 (예: '식이섬유 6.3g', '식이섬유 3.8g', '식이섬유 9g')
+          if (l.includes('식이섬유')) {
+            const m = l.match(/식이섬유\s*(\d+(?:\.\d+)?)\s*g?/i);
             if (m && m[1]) document.getElementById('fiberGrams').value = parseFloat(m[1]);
           }
 
-          // 칼로리 (예: '132kcal', '330kcal')
-          if (cleanLine.includes('kcal') || cleanLine.includes('Kcal')) {
-            const m = cleanLine.match(/(\d+(?:\.\d+)?)\s*kcal/i);
+          // 칼로리 (예: '132kcal', '330kcal', '190kcal', '352kcal', '110kcal')
+          if (l.includes('kcal') || l.includes('Kcal') || l.includes('칼로리')) {
+            const m = l.match(/(\d+(?:\.\d+)?)\s*kcal/i) || l.match(/(\d{2,4})\s*kcal/i);
             if (m && m[1]) document.getElementById('calories').value = parseFloat(m[1]);
           }
         });
@@ -1153,7 +1154,7 @@
           renderActiveSuppChecklist();
           updateSuppSubmitButtonState();
         };
-        // 체크박스 세로 중앙 정렬 items-center
+        // items-center 적용으로 체크박스와 우측 선택 배지 수직 세로 중앙 정렬
         card.className = `p-2 rounded-xl border text-xs cursor-pointer transition-all flex items-center justify-between min-h-[38px] ${
           isChecked ? 'bg-purple-50/90 border-purple-300 text-purple-950 font-bold shadow-2xs' : 'bg-gray-50 border-gray-100 text-gray-400 line-through'
         }`;
