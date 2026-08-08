@@ -178,7 +178,7 @@
       </div>
     </div>
 
-    <!-- 영양 달성률 대시보드 (완벽한 좌측 라인 일치 및 내부 컴포넌트 정렬) -->
+    <!-- 영양 달성률 대시보드 -->
     <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 space-y-3.5">
       <div class="flex justify-between items-center border-b pb-2">
         <span class="text-sm font-black text-gray-800 uppercase tracking-wider">🎯 영양 달성률</span>
@@ -261,7 +261,7 @@
         </button>
       </div>
 
-      <div id="activeSuppChecklist" class="flex flex-col gap-1 pt-1"></div>
+      <div id="activeSuppChecklist" class="flex flex-col gap-1.5 pt-1"></div>
 
       <button id="suppSubmitBtn" onclick="submitSupplements()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-sm transition-colors mt-2">
         저장하기
@@ -307,7 +307,7 @@
     </div>
   </div>
 
-  <!-- TAB 3: 섭취 -->
+  <!-- TAB 3: 섭취 (식단 사진 / 영양성분표 사진 자동 OCR 기입 적용) -->
   <div id="tabUpload" class="tab-content space-y-4">
     <div id="inputFormCard" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-3">
       <div class="flex justify-between items-center">
@@ -319,11 +319,15 @@
 
       <form id="trackerForm" onsubmit="addEntry(event)" class="space-y-3">
         <div>
-          <label for="foodPhotoInput" class="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-white hover:bg-gray-50 transition-colors">
-            <span class="text-lg">📸</span>
-            <span id="photoFileName" class="text-xs font-bold text-gray-700">식단 사진 추가하기 / 촬영 (선택)</span>
-            <input type="file" id="foodPhotoInput" accept="image/*" onchange="handlePhotoSelect(event)" class="hidden">
+          <label for="foodPhotoInput" class="flex flex-col items-center justify-center gap-1 p-3 border-2 border-dashed border-blue-300 rounded-xl cursor-pointer bg-blue-50/20 hover:bg-blue-50/50 transition-colors text-center">
+            <div class="flex items-center gap-1.5">
+              <span class="text-lg">📸</span>
+              <span id="photoFileName" class="text-xs font-bold text-blue-900">식단 / 영양성분표 사진 업로드 및 자동 분석</span>
+            </div>
+            <span id="foodOcrStatus" class="text-[10px] text-gray-400">영양정보 표 사진 첨부 시 단/탄/지/식이섬유/kcal 자동 입력</span>
           </label>
+          <input type="file" id="foodPhotoInput" accept="image/*" onchange="handlePhotoSelectAndOcr(event)" class="hidden">
+          
           <div id="photoPreviewContainer" class="hidden mt-2 relative w-20 h-20 rounded-xl overflow-hidden border">
             <img id="photoPreview" class="w-full h-full object-cover">
             <button type="button" onclick="removePhotoPreview()" class="absolute top-1 right-1 bg-black/60 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center font-bold">✕</button>
@@ -351,13 +355,13 @@
         </div>
 
         <div class="grid grid-cols-2 gap-2">
-          <input type="number" step="0.1" inputmode="decimal" id="proteinGrams" placeholder="단백질 (g)" required class="form-control-h w-full px-3 text-[11px] border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
-          <input type="number" step="0.1" inputmode="decimal" id="carbsGrams" placeholder="탄수화물 (g)" required class="form-control-h w-full px-3 text-[11px] border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+          <input type="number" step="0.1" inputmode="decimal" id="proteinGrams" placeholder="단백질 (g)" required class="form-control-h w-full px-3 text-[11px] border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-bold">
+          <input type="number" step="0.1" inputmode="decimal" id="carbsGrams" placeholder="탄수화물 (g)" required class="form-control-h w-full px-3 text-[11px] border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-bold">
         </div>
         <div class="grid grid-cols-3 gap-2">
-          <input type="number" step="0.1" inputmode="decimal" id="fatGrams" placeholder="지방 (g)" required class="form-control-h w-full px-3 text-[11px] border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
-          <input type="number" step="0.1" inputmode="decimal" id="fiberGrams" placeholder="식이섬유 (g)" required class="form-control-h w-full px-3 text-[11px] border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
-          <input type="number" step="0.1" inputmode="decimal" id="calories" placeholder="칼로리 (kcal)" required class="form-control-h w-full px-3 text-[11px] border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500">
+          <input type="number" step="0.1" inputmode="decimal" id="fatGrams" placeholder="지방 (g)" required class="form-control-h w-full px-3 text-[11px] border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-bold">
+          <input type="number" step="0.1" inputmode="decimal" id="fiberGrams" placeholder="식이섬유 (g)" required class="form-control-h w-full px-3 text-[11px] border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-bold">
+          <input type="number" step="0.1" inputmode="decimal" id="calories" placeholder="칼로리 (kcal)" required class="form-control-h w-full px-3 text-[11px] border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-bold">
         </div>
         
         <div class="flex items-center gap-2 pt-1">
@@ -432,14 +436,14 @@
     </div>
   </div>
 
-  <!-- TAB 4: 운동 -->
+  <!-- TAB 4: 운동 (다양한 스크린샷 폼팩터 정규식 고도화 적용) -->
   <div id="tabWorkout" class="tab-content space-y-4">
     <div class="bg-white rounded-2xl p-4 shadow-sm border border-emerald-200 bg-emerald-50/30 space-y-3">
       <div class="flex justify-between items-center">
         <h2 class="text-sm font-bold text-emerald-900 flex items-center gap-1"><span>📷 운동 스크린샷 캡처 자동 수집</span></h2>
         <span id="ocrStatus" class="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-md hidden">분석 중...</span>
       </div>
-      <p class="text-[11px] text-emerald-800">피트니스 활동 요약 캡처를 올리면 활동 소모 칼로리를 자동 분석하여 총 적자에 반영합니다.</p>
+      <p class="text-[11px] text-emerald-800">애플워치 활동 요약, 운동 상세 스크린샷을 첨부하면 운동 시간 및 활동 칼로리를 자동 분석하여 수집합니다.</p>
       <label for="workoutScreenshotInput" class="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-emerald-300 rounded-xl cursor-pointer bg-white hover:bg-emerald-50 transition-colors">
         <span class="text-lg">📸</span>
         <span class="text-xs font-bold text-emerald-900">스크린샷 업로드 / 활동량 자동 계산</span>
@@ -465,22 +469,23 @@
     </div>
   </div>
 
-  <!-- TAB 5: 기록 (박스 넘침 방지 및 수평 정렬 개선된 카드 헤더) -->
+  <!-- TAB 5: 기록 (헤더 양끝 패딩 조정 및 초기화 위치 이동 적용) -->
   <div id="tabTimeline" class="tab-content space-y-4">
-    <div class="bg-white rounded-3xl p-4.5 shadow-sm border border-gray-100 space-y-3">
-      <div class="flex items-center justify-between border-b pb-2">
+    <div class="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 space-y-3">
+      
+      <div class="flex items-center justify-between border-b pb-2 px-1">
         <h2 class="text-sm font-extrabold text-gray-800 shrink-0">⏱️ 섭취 기록</h2>
         <input type="date" id="timelineDatePicker" onchange="onTimelineDatePickerChange(event)" 
-          class="border border-gray-200 rounded-xl px-2 py-1 text-xs font-bold focus:outline-none focus:border-blue-500 text-gray-700 h-8">
+          class="border border-gray-200 rounded-xl px-2.5 py-1 text-xs font-bold focus:outline-none focus:border-blue-500 text-gray-700 h-8 text-center">
       </div>
 
-      <div class="flex bg-gray-100 p-1 rounded-2xl text-xs font-bold">
-        <button id="catFoodBtn" onclick="switchCategory('food')" class="flex-1 py-2 rounded-xl bg-white shadow-xs text-blue-600 font-bold">🍱 식품 섭취 기록</button>
-        <button id="catSuppBtn" onclick="switchCategory('supp')" class="flex-1 py-2 rounded-xl text-gray-500 font-medium">💊 영양제 섭취 기록</button>
+      <div class="flex bg-gray-100 p-1 rounded-2xl text-xs font-bold w-full mx-auto">
+        <button id="catFoodBtn" onclick="switchCategory('food')" class="flex-1 py-2 rounded-xl bg-white shadow-xs text-blue-600 font-bold">🍱 식품</button>
+        <button id="catSuppBtn" onclick="switchCategory('supp')" class="flex-1 py-2 rounded-xl text-gray-500 font-medium">💊 영양제</button>
       </div>
 
       <div class="flex justify-end pt-0.5">
-        <button onclick="resetSelectedDateData()" class="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1.5 rounded-xl border border-rose-100 hover:bg-rose-100 transition-colors">
+        <button onclick="resetSelectedDateData()" class="text-xs font-bold text-rose-600 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-100 hover:bg-rose-100 transition-colors">
           🗑️ 초기화
         </button>
       </div>
@@ -612,6 +617,7 @@
       document.getElementById('headerGreeting').innerText = `${userName} 님 오늘도 화이팅 입니다`;
     }
 
+    // [운동 스크린샷 OCR 분석 파싱 정규식 고도화]
     function processWorkoutScreenshot(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -634,25 +640,109 @@
         const now = new Date();
         const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 
-        const lines = text.split('\n');
-        lines.forEach(line => {
-          const trimmed = line.trim();
-          const kcalMatch = trimmed.match(/(\d+)\s*KCAL/i) || trimmed.match(/(\d+)\s*kcal/i);
-          if (kcalMatch) {
-            workoutMap[selectedKey].push({
-              name: '스크린샷 활동 소모 칼로리',
-              duration: Number(kcalMatch[1]),
-              time: timeStr
-            });
-          }
-        });
+        let parsedKcal = 0;
+        let parsedDurationMin = 0;
+        let workoutTitle = '스크린샷 활동량';
 
-        localStorage.setItem('nutritionWorkoutMap', JSON.stringify(workoutMap));
-        render();
-        alert('스크린샷 활동 칼로리가 반영되었습니다!');
+        // 1. 이미지 내 훈련 제목 파싱 (예: '전통적인 근력 훈련', '실내 달리')
+        if (text.includes('근력 훈련') || text.includes('근력')) workoutTitle = '근력 훈련';
+        else if (text.includes('달리기') || text.includes('러닝')) workoutTitle = '실내 달리';
+
+        // 2. 활동 칼로리 파싱 (예: '298kcal', '210kcal', '678/600KCAL')
+        const moveMatch = text.match(/Move\s*(\d+)/i) || text.match(/(\d+)\s*\/\s*\d+\s*KCAL/i);
+        const kcalMatch = text.match(/(\d+)\s*kcal/i) || text.match(/(\d+)\s*KCAL/i);
+
+        if (moveMatch) {
+          parsedKcal = Number(moveMatch[1]);
+        } else if (kcalMatch) {
+          parsedKcal = Number(kcalMatch[1]);
+        }
+
+        // 3. 운동 시간 파싱 (예: '0:58:53', '0:20:28', '87/60MIN')
+        const timeMatch = text.match(/(\d+):(\d{2}):(\d{2})/) || text.match(/(\d+):(\d{2})/);
+        const minMatch = text.match(/(\d+)\s*\/\s*\d+\s*MIN/i) || text.match(/Exercise\s*(\d+)/i);
+
+        if (timeMatch) {
+          parsedDurationMin = Number(timeMatch[1]) * 60 + Number(timeMatch[2]);
+        } else if (minMatch) {
+          parsedDurationMin = Number(minMatch[1]);
+        }
+
+        if (parsedKcal > 0 || parsedDurationMin > 0) {
+          workoutMap[selectedKey].push({
+            name: workoutTitle,
+            durationMin: parsedDurationMin,
+            duration: parsedKcal,
+            time: timeStr
+          });
+          localStorage.setItem('nutritionWorkoutMap', JSON.stringify(workoutMap));
+          render();
+          alert(`분석 완료! [${workoutTitle}] ${parsedDurationMin > 0 ? parsedDurationMin + '분 / ' : ''}${parsedKcal}kcal 자동 기입되었습니다.`);
+        } else {
+          alert('이미지에서 운동 칼로리를 인식하지 못했습니다. 수동 기입을 이용해주세요.');
+        }
       }).catch(err => {
         statusEl.innerText = '❌ 분석 실패';
         alert('이미지 분석 실패. 수동 기입을 이용해주세요.');
+      });
+    }
+
+    // [식단 섭취 탭 영양성분표 사진 자동 OCR 분석 파서 추가]
+    function handlePhotoSelectAndOcr(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // 미리보기 표시
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        selectedPhotoBase64 = e.target.result;
+        document.getElementById('photoPreview').src = selectedPhotoBase64;
+        document.getElementById('photoPreviewContainer').classList.remove('hidden');
+        document.getElementById('photoFileName').innerText = '사진 선택됨';
+      };
+      reader.readAsDataURL(file);
+
+      const statusEl = document.getElementById('foodOcrStatus');
+      statusEl.innerText = '📷 영양성분표 읽는 중...';
+      statusEl.className = 'text-[10px] font-bold text-blue-600 animate-pulse';
+
+      Tesseract.recognize(
+        file,
+        'kor+eng',
+        { logger: m => console.log(m) }
+      ).then(({ data: { text } }) => {
+        statusEl.innerText = '✓ 영양정보 자동 입력 완료!';
+        statusEl.className = 'text-[10px] font-bold text-emerald-600';
+
+        const lines = text.split('\n');
+        
+        lines.forEach(line => {
+          const trimmed = line.replace(/\s+/g, '');
+          
+          // 단백질 (예: 단백질 15.8g, 단백질 15g)
+          const pMatch = trimmed.match(/단백질\s*(\d+(?:\.\d+)?)\s*g/i) || trimmed.match(/단백질\s*(\d+(?:\.\d+)?)/i);
+          if (pMatch && pMatch[1]) document.getElementById('proteinGrams').value = pMatch[1];
+
+          // 탄수화물 (예: 탄수화물 63g)
+          const cMatch = trimmed.match(/탄수화물\s*(\d+(?:\.\d+)?)\s*g/i) || trimmed.match(/탄수화물\s*(\d+(?:\.\d+)?)/i);
+          if (cMatch && cMatch[1]) document.getElementById('carbsGrams').value = cMatch[1];
+
+          // 지방 (예: 지방 3g)
+          const fMatch = trimmed.match(/지방\s*(\d+(?:\.\d+)?)\s*g/i) || trimmed.match(/지방\s*(\d+(?:\.\d+)?)/i);
+          if (fMatch && fMatch[1]) document.getElementById('fatGrams').value = fMatch[1];
+
+          // 식이섬유 (예: 식이섬유 6.3g)
+          const fiberMatch = trimmed.match(/식이섬유\s*(\d+(?:\.\d+)?)\s*g/i) || trimmed.match(/식이섬유\s*(\d+(?:\.\d+)?)/i);
+          if (fiberMatch && fiberMatch[1]) document.getElementById('fiberGrams').value = fiberMatch[1];
+
+          // 칼로리 (예: 330 kcal, 330kcal)
+          const kcalMatch = trimmed.match(/(\d+(?:\.\d+)?)\s*kcal/i);
+          if (kcalMatch && kcalMatch[1]) document.getElementById('calories').value = kcalMatch[1];
+        });
+
+      }).catch(err => {
+        statusEl.innerText = '영양정보 표 사진 첨부 시 단/탄/지/식이섬유/kcal 자동 입력';
+        statusEl.className = 'text-[10px] text-gray-400';
       });
     }
 
@@ -764,25 +854,13 @@
       render();
     }
 
-    function handlePhotoSelect(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          selectedPhotoBase64 = e.target.result;
-          document.getElementById('photoPreview').src = selectedPhotoBase64;
-          document.getElementById('photoPreviewContainer').classList.remove('hidden');
-          document.getElementById('photoFileName').innerText = '사진 선택됨';
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-
     function removePhotoPreview() {
       selectedPhotoBase64 = null;
       document.getElementById('foodPhotoInput').value = '';
       document.getElementById('photoPreviewContainer').classList.add('hidden');
-      document.getElementById('photoFileName').innerText = '식단 사진 추가하기 / 촬영 (선택)';
+      document.getElementById('photoFileName').innerText = '식단 / 영양성분표 사진 업로드 및 자동 분석';
+      document.getElementById('foodOcrStatus').innerText = '영양정보 표 사진 첨부 시 단/탄/지/식이섬유/kcal 자동 입력';
+      document.getElementById('foodOcrStatus').className = 'text-[10px] text-gray-400';
     }
 
     function updateCategoryDropdowns() {
@@ -989,7 +1067,7 @@
       });
     }
 
-    // --- 영양제 섭취 제어 (3/5 축소 체크리스트 카드 & 중앙 정렬) ---
+    // --- 영양제 섭취 제어 ---
     function switchSuppTab(slot) {
       currentSuppTimeTab = slot;
       ['morning', 'lunch', 'dinner'].forEach(s => {
@@ -1065,7 +1143,7 @@
     function updateSuppSubmitButtonState() {
       const selectedKey = formatDateKey(selectedDate);
       const currentLogs = logsMap[selectedKey] || [];
-      const savedForSlot = currentLogs.filter(l => l.isSupp && l.suppType === slot);
+      const savedForSlot = currentLogs.filter(l => l.isSupp && l.suppType === currentSuppTimeTab);
       
       const btn = document.getElementById('suppSubmitBtn');
       const list = suppRoutines[currentSuppTimeTab] || [];
